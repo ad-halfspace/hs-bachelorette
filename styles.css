@@ -4864,9 +4864,19 @@ body {
   }
 }
 
-/* ── Per-player mobile sections ── */
+/* ── Per-player sections (mobile OR 5+ players) ── */
 .player-sections {
   display: none;
+}
+
+.episode--per-player .desktop-bet-section {
+  display: none !important;
+}
+
+.episode--per-player .player-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 @media (max-width: 720px) {

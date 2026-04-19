@@ -4101,6 +4101,7 @@ function renderEpisodeContent() {
   const betsLocked = ep ? isEpisodeBetsLocked(ep) : false;
   if (workspace) {
     workspace.classList.toggle("episode--closed", closed);
+    workspace.classList.toggle("episode--per-player", state.players.length >= 5);
   }
 
   const heroEl = document.getElementById("episode-hero");
