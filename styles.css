@@ -4867,6 +4867,7 @@ body {
 /* ── Per-player sections (mobile OR 5+ players) ── */
 .player-sections {
   display: none;
+  grid-column: 1 / -1;
 }
 
 .episode--per-player .desktop-bet-section {
@@ -4874,13 +4875,20 @@ body {
 }
 
 .episode--per-player .player-sections {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   gap: 1rem;
 }
 
+@media (max-width: 1000px) and (min-width: 721px) {
+  .episode--per-player .player-sections {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 @media (max-width: 720px) {
-  .desktop-bet-section {
+  .desktop-bet-section,
+  #nuttet-section {
     display: none !important;
   }
 
