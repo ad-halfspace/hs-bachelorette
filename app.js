@@ -20,16 +20,15 @@ const SEASON_BET_CATEGORIES = [
 ];
 
 /* ── Firebase ── */
-/* TODO: Replace with your own Firebase project config */
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  databaseURL: "https://YOUR_PROJECT-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "YOUR_PROJECT",
-  storageBucket: "YOUR_PROJECT.firebasestorage.app",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID",
-  measurementId: "YOUR_MEASUREMENT_ID",
+  apiKey: "AIzaSyAKSwJhqwk71Ac6DbdDR-HOFdInxt_E1Bc",
+  authDomain: "hs-bachelorette.firebaseapp.com",
+  databaseURL: "https://hs-bachelorette-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "hs-bachelorette",
+  storageBucket: "hs-bachelorette.firebasestorage.app",
+  messagingSenderId: "1086448209355",
+  appId: "1:1086448209355:web:4e07840bbefaed964c3a4e",
+  measurementId: "G-SW4ZL1F6B7",
 };
 const fbApp = firebase.initializeApp(firebaseConfig);
 const fbDb = firebase.database();
