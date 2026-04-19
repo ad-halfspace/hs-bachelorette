@@ -3472,8 +3472,10 @@ function renderAbout() {
   </div>
   <div class="about-split__content">
     <p class="about__lede">A Bachelorette betting pool for the Halfspace crew.</p>
-    <p>Every episode, each player picks three events they think will happen from a shared bet bank. Each event carries odds \u2014 rarer events pay more if you\u2019re right. On rose ceremony nights, there\u2019s an extra bet: who\u2019s going home?</p>
-    <p>There\u2019s also a \u201Cseason\u2019s cutest\u201D column \u2014 zero points, pure vibes. Each week you pick which contestant you thought was cutest. It\u2019s not strategy, it\u2019s a feelings column.</p>
+    <p>Every episode, each player picks <strong>three events</strong> they think will happen from a shared bet bank. Each event carries odds \u2014 rarer events pay more if you\u2019re right. You get points equal to the odds for every correct pick, and zero for wrong ones.</p>
+    <p>On <strong>rose ceremony nights</strong>, there\u2019s an extra bet: who\u2019s going home? Nail the elimination and you earn bonus points on top of your regular picks.</p>
+    <p>There are also <strong>season bets</strong> \u2014 long-range predictions you lock in early (like who wins, first kiss, biggest villain). These pay out at the end of the season and can swing the leaderboard.</p>
+    <p>Finally, there\u2019s the <strong>\u201Cseason\u2019s cutest\u201D</strong> column \u2014 zero points, pure vibes. Each Thursday you pick which contestant you thought was cutest that week. It\u2019s not strategy, it\u2019s a feelings column. A running tally shows who the group collectively finds most adorable.</p>
   </div>
 </section>
 
@@ -3489,28 +3491,28 @@ function renderAbout() {
         <span class="about-numbered__num">01</span>
         <div class="about-numbered__body">
           <h3 class="about-numbered__title">Pick your bets</h3>
-          <p>Before the episode airs, each player picks 3 events from the bet bank. Higher odds = less likely = more points if you\u2019re right.</p>
+          <p>Before the episode airs, each player picks 3 events from the bet bank. Higher odds = less likely = more points if you nail it. On elimination nights, you also pick who you think is going home.</p>
         </div>
       </div>
       <div class="about-numbered__item">
         <span class="about-numbered__num">02</span>
         <div class="about-numbered__body">
           <h3 class="about-numbered__title">Watch together (or apart)</h3>
-          <p>Bets lock at midnight on air day. No late entries. No mercy.</p>
+          <p>Bets lock automatically at midnight on air day \u2014 no late entries, no mercy. Watch the episode however you like; the app doesn\u2019t care.</p>
         </div>
       </div>
       <div class="about-numbered__item">
         <span class="about-numbered__num">03</span>
         <div class="about-numbered__body">
           <h3 class="about-numbered__title">Mark what happened</h3>
-          <p>After the episode, tick off events and eliminations. Points tally automatically. The leaderboard updates in real time.</p>
+          <p>After the episode, the admin ticks off which events actually happened and who got eliminated. Points are calculated automatically and the leaderboard updates instantly.</p>
         </div>
       </div>
       <div class="about-numbered__item">
         <span class="about-numbered__num">04</span>
         <div class="about-numbered__body">
           <h3 class="about-numbered__title">Everything syncs live</h3>
-          <p>No refreshing, no \u201Cdid you see my bet?\u201D Everyone sees everything in real time, across all devices.</p>
+          <p>No refreshing, no \u201Cdid you see my bet?\u201D Everyone sees everything in real time, across all devices. Open it on your phone during the episode or check the leaderboard on your laptop the next morning \u2014 it\u2019s always up to date.</p>
         </div>
       </div>
     </div>
@@ -3531,7 +3533,7 @@ function renderAbout() {
       </div>
       <div class="about-fairplay__block">
         <h3 class="about-fairplay__heading about-fairplay__heading--green">What doesn\u2019t</h3>
-        <p>Everything else. Strategic bets, Instagram scouting, elaborate spreadsheet analysis \u2014 all fair game. If it happens before the deadline, it\u2019s fair play.</p>
+        <p>Everything else. Strategic bets, Instagram scouting, reading spoiler forums, elaborate spreadsheet analysis \u2014 all fair game. If it happens before the deadline, it\u2019s fair play. Hustle is rewarded.</p>
       </div>
     </div>
   </div>
