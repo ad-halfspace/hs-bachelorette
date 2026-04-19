@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Halfspace Bachelorette Bets</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8C%B9%3C/text%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="bg-petals" aria-hidden="true"></div>
+    <div class="bg-ambient" aria-hidden="true"></div>
+    <div class="app">
+      <header class="hero" id="site-header">
+        <p class="hero__eyebrow">The official Halfspace tournament 2026</p>
+        <h1 class="hero__lockup">
+          <span class="hero__wordmark text-gradient-gold">Bachelorette</span>
+          <span class="hero__wordmark hero__wordmark--sm text-gradient-gold">Bets</span>
+        </h1>
+        <p class="hero__tagline">Three picks each · may the best colleague win</p>
+      </header>
+
+
+      <nav class="episode-nav" aria-label="Leaderboard, cast, bet bank and episodes">
+        <div id="main-tabs" class="episode-tabs"></div>
+      </nav>
+
+      <section
+        id="view-overview"
+        class="panel panel--wide view-overview"
+        aria-labelledby="overview-dash-heading"
+      >
+        <h2 id="overview-dash-heading" class="visually-hidden">Overview</h2>
+        <div id="upcoming-deadline-strip" class="upcoming-deadline-strip" hidden></div>
+
+        <div id="leaderboard" class="leaderboard"></div>
+        <p class="panel__hint overview-block__hint" id="lb-bet-status-hint" hidden></p>
+
+        <hr class="overview-divider" />
+
+        <div id="overview-nuttet" class="overview-block" hidden></div>
+
+        <hr class="overview-divider" />
+
+        <div class="running-section">
+          <div class="running-section__left">
+            <h3 class="running-section__heading">All bets</h3>
+          </div>
+          <div id="overview-all-bets"></div>
+        </div>
+
+        <hr class="overview-divider" />
+
+        <div class="running-section" id="overview-running-section">
+          <div class="running-section__left">
+            <span class="running-section__tag">The contestants</span>
+            <h3 class="running-section__heading">Still in the running</h3>
+            <p class="running-section__count"></p>
+          </div>
+          <div class="running-section__right" id="overview-running-guys"></div>
+        </div>
+        <div id="overview-streak-leaders" class="overview-streak-leaders" hidden></div>
+      </section>
+
+      <section
+        id="view-cast"
+        class="panel panel--wide cast-overview"
+        aria-labelledby="cast-heading"
+        hidden
+      >
+        <header class="page-hero">
+          <h2 id="cast-heading" class="page-hero__title">Cast</h2>
+          <p class="page-hero__tagline">Bachelorette 4 (2026) — the 16 contestants</p>
+        </header>
+        <p class="panel__hint">
+          Mie Borup and Sofie Sytnik Jørgensen are dating 16 men in Sicily. Premieres Tuesday 21 April 2026.
+          Cast and photos from the
+          <a
+            href="https://omtv2.tv2.dk/presse/pressekit/bachelorette-4-2026/"
+            target="_blank"
+            rel="noopener noreferrer"
+            >TV 2 press kit</a
+          >.
+        </p>
+        <div id="cast-grid" class="cast-grid"></div>
+        <button type="button" id="cast-add-toggle" class="btn btn--add-episode">+ Add contestant</button>
+        <div id="cast-add-modal" class="modal-overlay" hidden>
+          <div class="modal-overlay__box">
+            <h3 class="modal-overlay__title">Add a new contestant</h3>
+            <input type="text" id="cast-add-name" class="input" placeholder="Name" maxlength="48" autocomplete="off" />
+            <input type="url" id="cast-add-photo" class="input" placeholder="Photo URL (optional)" autocomplete="off" />
+            <div class="modal-overlay__actions">
+              <button type="button" id="cast-add-btn" class="btn btn--secondary">Add</button>
+              <button type="button" id="cast-add-cancel" class="btn btn--unlock">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section
+        id="view-event-bank"
+        class="panel panel--wide event-bank-section"
+        aria-labelledby="event-bank-heading"
+        hidden
+      >
+        <header class="page-hero">
+          <h2 id="event-bank-heading" class="page-hero__title">Bet bank</h2>
+          <p class="page-hero__tagline">Ready-made events grouped by category. Pick an episode, tweak the odds if you like, then hit Add.</p>
+          <details class="bet-bank-phase-explainer">
+          <summary class="bet-bank-phase-explainer__toggle">How do phase-adjusted odds work?</summary>
+          <div class="bet-bank-phase-explainer__body">
+            <p>
+              Each bet can have a <strong>phase tag</strong> that shifts its odds depending on
+              where the episode falls in the season (early&nbsp;&#8592; mid&nbsp;&#8594; late).
+              The season is split into three thirds based on an estimated ~28-episode horizon (adapts if more episodes are added).
+            </p>
+            <table class="bet-bank-phase-table">
+              <thead>
+                <tr><th>Phase tag</th><th>Early ep.</th><th>Mid ep.</th><th>Late ep.</th><th>Idea</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><code>early-heavy</code></td><td>&times;0.7</td><td>&times;1.2</td><td>&times;1.8</td><td>Likely early on, pays more later</td></tr>
+                <tr><td><code>mid-peak</code></td><td>&times;1.3</td><td>&times;0.8</td><td>&times;1.3</td><td>Most likely mid-season, cheaper then</td></tr>
+                <tr><td><code>late-heavy</code></td><td>&times;1.8</td><td>&times;1.2</td><td>&times;0.7</td><td>Unlikely early, common in the finale stretch</td></tr>
+                <tr><td><code>any</code></td><td>&times;1.0</td><td>&times;1.0</td><td>&times;1.0</td><td>No adjustment &mdash; flat odds all season</td></tr>
+              </tbody>
+            </table>
+            <p>
+              <strong>Example:</strong> A bet with base odds <em>3.0&times;</em> tagged <code>early-heavy</code>
+              added to Episode&nbsp;2 (early) becomes <em>3.0 &times; 0.7 = 2.1&times;</em>.
+              The same bet in Episode&nbsp;20 (late) becomes <em>3.0 &times; 1.8 = 5.4&times;</em>.
+              You can override the phase on any bet or set it to <code>any</code> to disable the adjustment.
+            </p>
+          </div>
+        </details>
+        </header>
+        <div class="event-bank-toolbar">
+          <label class="event-bank-toolbar__label" for="bank-target-episode">Add into episode</label>
+          <select id="bank-target-episode" class="input event-bank-select" aria-describedby="bank-target-hint">
+            <option value="">— Select episode —</option>
+          </select>
+          <span id="bank-target-hint" class="panel__hint event-bank-toolbar__hint">Required before using Add<br/>on each row.</span>
+        </div>
+        <div class="event-bank-filters">
+          <div class="event-bank-search-row">
+            <label class="event-bank-search-row__label" for="bank-event-search">Search</label>
+            <input
+              type="search"
+              id="bank-event-search"
+              class="input event-bank-search-row__input"
+              placeholder="Filter events…"
+              autocomplete="off"
+              enterkeyhint="search"
+            />
+          </div>
+          <div class="event-bank-search-row">
+            <label class="event-bank-search-row__label" for="bank-category-filter">Category</label>
+            <select id="bank-category-filter" class="input event-bank-search-row__input">
+              <option value="">All categories</option>
+            </select>
+          </div>
+        </div>
+        <div id="event-bank-list" class="event-bank-list"></div>
+
+        <div class="bank-custom-form">
+          <h3 class="bank-custom-form__title panel__title">Add your own bet</h3>
+          <div class="bank-custom-form__row">
+            <input
+              type="text"
+              id="custom-bank-text"
+              class="input"
+              placeholder="Describe a custom bet…"
+              maxlength="140"
+              autocomplete="off"
+            />
+            <input
+              type="number"
+              id="custom-bank-odds"
+              class="input input--narrow"
+              min="1.1"
+              max="99"
+              step="0.1"
+              value="2.0"
+              title="Decimal odds"
+            />
+            <select id="custom-bank-category" class="input bank-custom-form__cat"></select>
+            <select id="custom-bank-phase" class="input bank-custom-form__phase" title="Season phase weighting">
+              <option value="any">any phase</option>
+              <option value="early-heavy">early</option>
+              <option value="mid-peak">mid</option>
+              <option value="late-heavy">late</option>
+            </select>
+            <button type="button" id="add-custom-bank-event" class="btn btn--secondary">Add to bank</button>
+          </div>
+        </div>
+      </section>
+
+      <section
+        id="view-weekly-recap"
+        class="panel panel--wide weekly-recap-section"
+        aria-labelledby="weekly-recap-heading"
+        hidden
+      >
+        <header class="page-hero">
+          <h2 id="weekly-recap-heading" class="page-hero__title">Weekly recap</h2>
+          <p class="page-hero__tagline">Weekly summary of points, highlights, and eliminations.</p>
+        </header>
+        <div id="weekly-recap-progress" class="weekly-recap-progress"></div>
+        <div id="weekly-recap-cards" class="weekly-recap-cards"></div>
+      </section>
+
+      <section
+        id="view-season-bets"
+        class="panel panel--wide season-bets-section"
+        aria-labelledby="season-bets-heading"
+        hidden
+      >
+        <header class="page-hero">
+          <h2 id="season-bets-heading" class="page-hero__title">Season bets</h2>
+          <p class="page-hero__tagline">One-time predictions placed before the season starts. Lock them in, then see how you did at the finale.</p>
+        </header>
+        <div id="season-bets-lock-bar" class="season-bets-lock-bar"></div>
+        <div id="season-bets-cards" class="season-bets-cards"></div>
+        <div id="season-results-section" class="season-results-section">
+          <h3 class="overview-block__title panel__title">Results</h3>
+          <p class="panel__hint">
+            Fill in the actual outcomes as they happen. Points are awarded automatically.
+          </p>
+          <div id="season-results-grid" class="season-results-grid"></div>
+        </div>
+        <div id="season-points-summary" class="season-points-summary"></div>
+      </section>
+
+      <section
+        id="view-my-stats"
+        class="panel panel--wide my-stats-section"
+        aria-labelledby="my-stats-heading"
+        hidden
+      >
+        <div id="my-stats-header" class="my-stats-header"></div>
+        <div id="my-stats-player-bar" class="my-stats-player-bar"></div>
+        <div id="my-stats-content" class="my-stats-content"></div>
+      </section>
+
+      <section id="view-about" class="about-page" aria-labelledby="about-heading" hidden>
+        <div id="about-content" class="about-content"></div>
+      </section>
+
+      <main id="episode-workspace" class="main-grid" hidden>
+        <div id="episode-lock-banner" class="episode-lock-banner" hidden>
+          <span class="episode-lock-banner__text">This episode is closed. Scores are final. <strong>Reopen</strong> below if you need to make changes.</span>
+        </div>
+        <header id="episode-hero" class="page-hero page-hero--episode"></header>
+        <div id="episode-extras" class="episode-extras">
+          <div id="add-episode-modal" class="modal-overlay" hidden>
+            <div class="modal-overlay__box">
+              <h3 class="modal-overlay__title">New episode</h3>
+              <label class="modal-overlay__field">
+                <span class="modal-overlay__label">Air date</span>
+                <input type="date" id="new-ep-airdate" class="input" />
+              </label>
+              <div class="modal-overlay__actions">
+                <button type="button" id="add-episode" class="btn btn--secondary">Create episode</button>
+                <button type="button" id="add-episode-cancel" class="btn btn--ghost">Cancel</button>
+              </div>
+            </div>
+          </div>
+          <button type="button" id="lock-bets" class="btn btn--lock-bets" hidden>Lock bets now</button>
+          <button type="button" id="unlock-bets" class="btn btn--unlock-bets" hidden>Unlock bets</button>
+          <button type="button" id="close-episode" class="btn btn--lock" hidden>Close episode</button>
+          <button type="button" id="reopen-episode" class="btn btn--unlock" hidden>Reopen episode</button>
+          <button type="button" id="delete-episode" class="btn btn--delete">Delete episode</button>
+          <button type="button" id="add-episode-toggle" class="btn btn--add-episode">+ Add episode</button>
+        </div>
+        <div id="bets-lock-banner" class="bets-lock-banner" hidden>
+          <span id="bets-lock-banner-text" class="bets-lock-banner__text">Bets are locked.</span>
+        </div>
+        <p id="episode-score-top" class="score-summary score-summary--top panel--wide" hidden></p>
+        <div id="deadline-display" class="deadline-display" hidden></div>
+        <div id="episode-airdate-bar" class="episode-airdate-bar" hidden></div>
+        <section class="panel" aria-labelledby="guys-heading">
+          <h2 id="guys-heading" class="panel__title">Contestants this episode</h2>
+          <div id="guys-grid" class="guys-grid"></div>
+          <button type="button" id="add-guy-toggle" class="btn btn--add-episode">+ Add contestant</button>
+          <div id="add-guy-modal" class="modal-overlay" hidden>
+            <div class="modal-overlay__box">
+              <h3 class="modal-overlay__title">Add contestant to episode</h3>
+              <input type="text" id="new-guy-name" class="input" placeholder="Name" maxlength="48" />
+              <input type="url" id="new-guy-photo" class="input" placeholder="Photo URL (optional)" autocomplete="off" />
+              <div class="modal-overlay__actions">
+                <button type="button" id="add-guy" class="btn btn--secondary">Add</button>
+                <button type="button" id="add-guy-cancel" class="btn btn--unlock">Cancel</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" aria-labelledby="events-heading">
+          <h2 id="events-heading" class="panel__title">Events &amp; odds</h2>
+          <p class="panel__hint">
+            Odds are shown as multipliers (e.g. 3.5×). Higher = less likely — more points if you’re right.
+          </p>
+          <ul id="events-list" class="events-list"></ul>
+          <div class="add-event">
+            <input
+              type="text"
+              id="new-event-text"
+              class="input"
+              placeholder="Describe an event"
+              maxlength="120"
+              list="master-event-suggestions"
+              autocomplete="off"
+            />
+            <datalist id="master-event-suggestions"></datalist>
+            <input
+              type="number"
+              id="new-event-odds"
+              class="input input--narrow"
+              min="1.1"
+              max="99"
+              step="0.1"
+              value="2"
+              title="Decimal odds multiplier"
+            />
+            <button type="button" id="add-event" class="btn btn--secondary">Add event</button>
+          </div>
+        </section>
+
+        <section class="panel panel--wide desktop-bet-section" aria-labelledby="bets-heading">
+          <h2 id="bets-heading" class="panel__title">Place bets (3 per person)</h2>
+          <p class="panel__hint">Each player picks 3 events they think will happen this episode.</p>
+          <div id="bets-grid" class="bets-grid"></div>
+        </section>
+
+        <section class="panel panel--wide desktop-bet-section" aria-labelledby="elim-bets-heading">
+          <h2 id="elim-bets-heading" class="panel__title">Who goes home? (1 pick per person)</h2>
+          <p class="panel__hint">
+            Each player picks the one contestant they think won't get a rose.
+            <span id="elim-odds-note" class="elim-odds-note"></span>
+          </p>
+          <div id="elim-bets-grid" class="elim-bets-grid"></div>
+        </section>
+
+        <section id="nuttet-section" class="panel panel--wide desktop-bet-section" hidden></section>
+
+        <div id="player-sections" class="player-sections"></div>
+
+        <section class="panel panel--wide panel--scoring" aria-labelledby="results-heading">
+          <h2 id="results-heading" class="panel__title">What actually happened?</h2>
+          <p class="panel__hint">Only events that someone bet on appear here. Tick the ones that occurred.</p>
+          <div id="results-list" class="results-list"></div>
+        </section>
+
+        <section class="panel panel--wide panel--scoring" aria-labelledby="elim-results-heading">
+          <h2 id="elim-results-heading" class="panel__title">Who didn't get a rose?</h2>
+          <p class="panel__hint">Tick each contestant eliminated this episode. They'll be removed from the next episode's lineup.</p>
+          <div id="elim-results-list" class="elim-results-grid"></div>
+          <p id="episode-score-summary" class="score-summary" hidden></p>
+        </section>
+      </main>
+
+      <footer class="footer" id="site-footer">
+        <p class="footer__credit">Halfspace Bachelorette Bets — built with love and an unreasonable amount of time in Cursor</p>
+        <details class="players-manager" id="players-manager">
+          <summary class="players-manager__toggle">Manage players</summary>
+          <div class="players-manager__body">
+            <ul id="players-list" class="players-manager__list"></ul>
+            <div class="players-manager__add">
+              <input type="text" id="new-player-name" class="input" placeholder="New player name" maxlength="24" autocomplete="off" />
+              <button type="button" id="add-player-btn" class="btn btn--secondary">Add player</button>
+            </div>
+          </div>
+        </details>
+        <div class="footer__bottom">
+          <button type="button" id="reset-data" class="btn btn--ghost">Reset all data</button>
+          <button type="button" id="restore-backup" class="btn btn--ghost">Restore backup</button>
+          <span class="footer__note">Synced live across all devices.</span>
+        </div>
+      </footer>
+    </div>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+    <script defer src="events-bank-data.js"></script>
+    <script defer src="app.js"></script>
+  </body>
+</html>
