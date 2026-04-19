@@ -852,12 +852,12 @@ function renderPlayersManager() {
   list.style.cssText = "list-style:none;padding:0;margin:0 0 0.5rem 0;display:flex;flex-wrap:wrap;gap:0.4rem;";
   state.players.forEach((name, i) => {
     const li = document.createElement("li");
-    li.style.cssText = "display:inline-flex;align-items:center;gap:0.3rem;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:2rem;padding:0.25rem 0.5rem 0.25rem 0.75rem;font-size:0.85rem;";
+    li.style.cssText = "display:inline-flex;align-items:center;gap:0.3rem;background:#f0ebe3;border:1px solid #d5cfc6;border-radius:2rem;padding:0.25rem 0.5rem 0.25rem 0.75rem;font-size:0.85rem;color:#1a1a1a;";
     const span = document.createElement("span");
     span.textContent = name;
     const rm = document.createElement("button");
     rm.type = "button";
-    rm.style.cssText = "background:none;border:none;color:rgba(255,255,255,0.5);cursor:pointer;font-size:1rem;line-height:1;padding:0 0.15rem;";
+    rm.style.cssText = "background:none;border:none;color:#b5271d;cursor:pointer;font-size:1.1rem;font-weight:700;line-height:1;padding:0 0.2rem;";
     rm.textContent = "\u00D7";
     rm.title = `Remove ${name}`;
     rm.addEventListener("click", () => removePlayer(i));
@@ -4022,6 +4022,13 @@ function renderPlayerSections() {
         renderPlayerSections();
       });
       card.append(nuttetSelect);
+    }
+
+    const allEventsFilled = picks.every((v) => v !== "");
+    const elimFilled = !(hasElim && ep.guys?.length) || !!(state.eliminationBets[ep.id]?.[p]);
+    const nuttetFilled = !isThursday || !!(nuttetPicks[p]);
+    if (allEventsFilled && elimFilled && nuttetFilled) {
+      card.classList.add("player-section-card--done");
     }
 
     root.append(card);
