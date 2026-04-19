@@ -3461,7 +3461,7 @@ function renderAbout() {
   root.innerHTML = `
 <header class="about-hero">
   <h1 class="about__h1" id="about-heading">About</h1>
-  <p class="about-hero__tagline">The story behind the bets and the nuttet column.</p>
+  <p class="about-hero__tagline">The story behind the bets and the cutest column.</p>
 </header>
 
 <article class="about-body">
@@ -3473,7 +3473,7 @@ function renderAbout() {
   <div class="about-split__content">
     <p class="about__lede">A Bachelorette betting pool for the Halfspace crew.</p>
     <p>Every episode, each player picks three events they think will happen from a shared bet bank. Each event carries odds \u2014 rarer events pay more if you\u2019re right. On rose ceremony nights, there\u2019s an extra bet: who\u2019s going home?</p>
-    <p>There\u2019s also a \u201Cnuttet\u201D column \u2014 zero points, pure vibes. Each week you pick which contestant you thought was cute. It\u2019s not strategy, it\u2019s a feelings column.</p>
+    <p>There\u2019s also a \u201Cseason\u2019s cutest\u201D column \u2014 zero points, pure vibes. Each week you pick which contestant you thought was cutest. It\u2019s not strategy, it\u2019s a feelings column.</p>
   </div>
 </section>
 
@@ -3834,7 +3834,7 @@ function renderNuttetSection(ep) {
 
   const title = document.createElement("h2");
   title.className = "panel__title";
-  title.textContent = "Nuttet this week";
+  title.textContent = "Cutest this week";
   const hint = document.createElement("p");
   hint.className = "panel__hint";
   hint.textContent = "Zero points. Pure vibes. Tradition since the iCloud note days.";
@@ -3993,7 +3993,7 @@ function renderPlayerSections() {
     if (isThursday) {
       const nuttetLabel = document.createElement("span");
       nuttetLabel.className = "player-section-card__label";
-      nuttetLabel.textContent = "Nuttet this week";
+      nuttetLabel.textContent = "Cutest this week";
       card.append(nuttetLabel);
 
       const nuttetSelect = document.createElement("select");
@@ -4056,7 +4056,7 @@ function renderNuttetOverview() {
   left.className = "running-section__left";
   const title = document.createElement("h3");
   title.className = "running-section__heading";
-  title.textContent = "Season's most cute";
+  title.textContent = "Season's cutest";
   left.append(title);
   root.append(left);
 
@@ -4602,7 +4602,7 @@ function generateRecapMarkdown(recap) {
     const rank = String(idx + 1).padStart(2, "0");
     const name = state.players[s.playerIndex];
     const pts = `${formatNumber(s.weekPoints)} pts`;
-    const nuttet = nuttetPicks[s.playerIndex] ? ` | Nuttet: ${nuttetPicks[s.playerIndex]}` : "";
+    const nuttet = nuttetPicks[s.playerIndex] ? ` | Cutest: ${nuttetPicks[s.playerIndex]}` : "";
     md += `${rank}  ${name} \u2014 ${pts}${nuttet}\n`;
   });
   md += "\n";
@@ -4737,7 +4737,7 @@ function renderWeeklyRecap() {
       const nuttetPick = sbNuttetPicks[s.playerIndex];
       const nuttetEl = document.createElement("span");
       nuttetEl.className = "recap-sb-row__nuttet";
-      nuttetEl.textContent = nuttetPick ? `Nuttet: ${nuttetPick}` : "";
+      nuttetEl.textContent = nuttetPick ? `Cutest: ${nuttetPick}` : "";
       row.append(rank, name, pts, nuttetEl);
       if (s.bestEpisodeDay && s.bestEpisodePts > 0) {
         const best = document.createElement("span");
