@@ -2462,6 +2462,10 @@ body {
   }
 }
 
+#overview-nuttet {
+  margin-top: 2rem;
+}
+
 .overview-block__title {
   font-size: 2rem;
   font-weight: 400;
