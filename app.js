@@ -898,7 +898,10 @@ function addPlayerFromInput() {
 
 function removePlayer(index) {
   const name = state.players[index];
-  if (!confirm(`Remove ${name}? Their bets will be deleted.`)) return;
+  if (!confirm(`Remove ${name}? Their bets will be deleted.\n\nA backup will be saved automatically.`)) return;
+  const backup = sharedState();
+  const ts = "pre-remove-" + new Date().toISOString().replace(/[:.]/g, "-");
+  fbDb.ref("backups/" + ts).set(backup).catch((e) => console.error("Backup failed:", e));
   state.players.splice(index, 1);
   for (const epId of Object.keys(state.bets)) {
     const epBets = state.bets[epId];
@@ -950,6 +953,7 @@ function removePlayer(index) {
   saveState();
   renderPlayersManager();
   renderAll();
+  showToast(`${name} removed. Backup saved — use "Restore backup" to undo.`);
 }
 
 function ensureEpisodeMaps(epId) {
