@@ -169,8 +169,10 @@ body {
 .panel--collapsible summary {
   list-style: none;
 }
-.panel--collapsible summary::-webkit-details-marker {
+.panel--collapsible summary::-webkit-details-marker,
+.panel--collapsible summary::marker {
   display: none;
+  content: "";
 }
 
 .panel__title--toggle {
@@ -182,14 +184,22 @@ body {
 }
 
 .panel__title--toggle::after {
-  content: "\25B6";
-  font-size: 0.55em;
-  transition: transform 0.2s ease;
-  color: var(--ink-soft);
+  content: "";
+  margin-left: auto;
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  border: 1.5px solid var(--line);
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4.5L6 8.5L10 4.5' fill='none' stroke='%231a1a1a' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat center;
+  transition: transform var(--duration) var(--ease), background-color var(--duration) var(--ease);
 }
 
 details[open] > .panel__title--toggle::after {
-  transform: rotate(90deg);
+  transform: rotate(180deg);
+  background-color: var(--ink);
+  border-color: var(--ink);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4.5L6 8.5L10 4.5' fill='none' stroke='%23ffffff' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 }
 
 .panel--collapsible__body {
@@ -1455,26 +1465,26 @@ details[open] > .panel__title--toggle::after {
 
 .tab-episode-select {
   font-family: inherit;
-  font-weight: 500;
+  font-weight: 600;
   font-size: 0.76rem;
   letter-spacing: 0.02em;
   padding: 0.45rem 2rem 0.45rem 0.95rem;
-  border: 1.5px solid var(--line);
+  border: 1.5px solid var(--gold-mid);
   border-radius: 999px;
   background-color: transparent;
   color: var(--ink-soft);
   cursor: pointer;
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23999'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%231a1a1a'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 0.7rem center;
   background-size: 10px 6px;
   transition: all var(--duration) var(--ease);
+  color: var(--ink);
 }
 
 .tab-episode-select:hover {
-  border-color: var(--ink-soft);
-  color: var(--ink);
+  background-color: rgba(26, 26, 26, 0.12);
 }
 
 .tab-episode-select--active {
