@@ -2108,6 +2108,7 @@ function renderBets() {
   root.innerHTML = "";
   if (!ep) return;
   ensureEpisodeMaps(ep.id);
+  root.style.setProperty("--player-cols", Math.min(state.players.length, 4));
   const frozen = isEpisodeBetsLocked(ep);
 
   for (let p = 0; p < state.players.length; p++) {
@@ -2676,6 +2677,7 @@ function renderSeasonBets() {
   const cardsRoot = document.getElementById("season-bets-cards");
   if (cardsRoot) {
     cardsRoot.innerHTML = "";
+    cardsRoot.style.setProperty("--player-cols", Math.min(state.players.length, 4));
     for (const cat of SEASON_BET_CATEGORIES) {
       const card = document.createElement("div");
       card.className = "season-card";
@@ -3988,6 +3990,8 @@ function renderPlayerSections() {
   const ep = activeEpisode();
   if (!ep) return;
   ensureEpisodeMaps(ep.id);
+  const cols = Math.min(state.players.length, 4);
+  root.style.setProperty("--player-cols", cols);
 
   const frozen = isEpisodeBetsLocked(ep);
   const closed = isEpisodeClosed(ep);

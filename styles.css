@@ -2224,13 +2224,13 @@ details[open] > .panel__title--toggle::after {
 
 .bets-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(var(--player-cols, 4), 1fr);
   gap: 1.25rem;
 }
 
 @media (max-width: 820px) {
   .bets-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(min(var(--player-cols, 4), 2), 1fr);
   }
 }
 
@@ -3857,7 +3857,7 @@ details[open] > .panel__title--toggle::after {
 
 .season-card__players {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(var(--player-cols, 4), 1fr);
   gap: 0.75rem;
 }
 
@@ -4022,7 +4022,7 @@ details[open] > .panel__title--toggle::after {
     padding: 1.25rem 1.15rem;
   }
   .season-card__players {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(min(var(--player-cols, 4), 2), 1fr);
   }
   .season-result-row {
     grid-template-columns: 1fr;
@@ -4966,13 +4966,13 @@ details[open] > .panel__title--toggle::after {
 
 .episode--per-player .player-sections {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(var(--player-cols, 4), 1fr);
   gap: 1rem;
 }
 
 @media (max-width: 1000px) and (min-width: 721px) {
   .episode--per-player .player-sections {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(min(var(--player-cols, 4), 2), 1fr);
   }
 }
 
