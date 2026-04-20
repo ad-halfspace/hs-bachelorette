@@ -4813,6 +4813,27 @@ function wireActions() {
     if (e.key === "Enter") addPlayerFromInput();
   });
 
+  function joinGame() {
+    const input = document.getElementById("join-player-name");
+    if (!input) return;
+    const name = input.value.trim();
+    if (!name) return;
+    if (state.players.includes(name)) {
+      showToast(`${name} is already in the game.`);
+      input.value = "";
+      return;
+    }
+    state.players.push(name);
+    input.value = "";
+    saveState();
+    renderAll();
+    showToast(`${name} joined the game!`);
+  }
+  document.getElementById("join-player-btn")?.addEventListener("click", joinGame);
+  document.getElementById("join-player-name")?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") joinGame();
+  });
+
   document.getElementById("restore-backup")?.addEventListener("click", async () => {
     try {
       const snap = await fbDb.ref("backups").orderByKey().limitToLast(10).once("value");

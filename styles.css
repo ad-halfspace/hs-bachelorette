@@ -3759,6 +3759,22 @@ details[open] > .panel__title--toggle::after {
   line-height: 1.5;
 }
 
+.footer__join {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+.join-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  max-width: 320px;
+  width: 100%;
+}
+.join-row__input {
+  flex: 1;
+}
+
 .footer__bottom {
   display: flex;
   align-items: center;
