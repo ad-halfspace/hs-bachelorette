@@ -247,6 +247,18 @@
         <div id="about-content" class="about-content"></div>
       </section>
 
+      <section id="view-admin" class="admin-page" hidden>
+        <div id="admin-gate" class="admin-gate">
+          <h2 class="admin-gate__title">Admin panel</h2>
+          <p class="admin-gate__hint">Enter the admin password to continue.</p>
+          <div class="admin-gate__form">
+            <input type="password" id="admin-pw" class="input admin-gate__input" placeholder="Password" autocomplete="off" />
+            <button type="button" id="admin-pw-submit" class="btn btn--secondary">Unlock</button>
+          </div>
+        </div>
+        <div id="admin-content" class="admin-content" hidden></div>
+      </section>
+
       <main id="episode-workspace" class="main-grid" hidden>
         <div id="episode-lock-banner" class="episode-lock-banner" hidden>
           <span class="episode-lock-banner__text">This episode is closed. Scores are final. <strong>Reopen</strong> below if you need to make changes.</span>
@@ -266,12 +278,12 @@
               </div>
             </div>
           </div>
-          <button type="button" id="lock-bets" class="btn btn--lock-bets" hidden>Lock bets now</button>
-          <button type="button" id="unlock-bets" class="btn btn--unlock-bets" hidden>Unlock bets</button>
-          <button type="button" id="close-episode" class="btn btn--lock" hidden>Close episode</button>
-          <button type="button" id="reopen-episode" class="btn btn--unlock" hidden>Reopen episode</button>
-          <button type="button" id="delete-episode" class="btn btn--delete">Delete episode</button>
-          <button type="button" id="add-episode-toggle" class="btn btn--add-episode">+ Add episode</button>
+          <button type="button" id="lock-bets" class="btn btn--lock-bets" hidden style="display:none"></button>
+          <button type="button" id="unlock-bets" class="btn btn--unlock-bets" hidden style="display:none"></button>
+          <button type="button" id="close-episode" class="btn btn--lock" hidden style="display:none"></button>
+          <button type="button" id="reopen-episode" class="btn btn--unlock" hidden style="display:none"></button>
+          <button type="button" id="delete-episode" class="btn btn--delete" style="display:none"></button>
+          <button type="button" id="add-episode-toggle" class="btn btn--add-episode" style="display:none"></button>
         </div>
         <div id="bets-lock-banner" class="bets-lock-banner" hidden>
           <span id="bets-lock-banner-text" class="bets-lock-banner__text">Bets are locked.</span>
@@ -366,19 +378,7 @@
 
       <footer class="footer" id="site-footer">
         <p class="footer__credit">Built with love, good vibes, and an unreasonable amount of time in Cursor by yours truly, Amalie "Tech-Girly" Dam</p>
-        <details class="players-manager" id="players-manager">
-          <summary class="players-manager__toggle">Manage players</summary>
-          <div class="players-manager__body">
-            <ul id="players-list" class="players-manager__list"></ul>
-            <div class="players-manager__add">
-              <input type="text" id="new-player-name" class="input" placeholder="New player name" maxlength="24" autocomplete="off" />
-              <button type="button" id="add-player-btn" class="btn btn--secondary">Add player</button>
-            </div>
-          </div>
-        </details>
         <div class="footer__bottom">
-          <button type="button" id="reset-data" class="btn btn--ghost">Reset all data</button>
-          <button type="button" id="restore-backup" class="btn btn--ghost">Restore backup</button>
           <span class="footer__note">Synced live across all devices.</span>
         </div>
       </footer>

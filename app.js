@@ -8,6 +8,7 @@ const SEASON_BETS = "season-bets";
 const WEEKLY_RECAP = "weekly-recap";
 const MY_STATS = "my-stats";
 const ABOUT = "about";
+const ADMIN = "admin";
 
 const EXPECTED_SEASON_LENGTH = 30;
 
@@ -478,7 +479,7 @@ function getEpisode(id) {
 }
 
 function normalizeActiveTab() {
-  if (state.activeTab === OVERVIEW || state.activeTab === CAST || state.activeTab === EVENT_BANK || state.activeTab === SEASON_BETS || state.activeTab === WEEKLY_RECAP || state.activeTab === MY_STATS || state.activeTab === ABOUT) return;
+  if (state.activeTab === OVERVIEW || state.activeTab === CAST || state.activeTab === EVENT_BANK || state.activeTab === SEASON_BETS || state.activeTab === WEEKLY_RECAP || state.activeTab === MY_STATS || state.activeTab === ABOUT || state.activeTab === ADMIN) return;
   if (!getEpisode(state.activeTab)) {
     state.activeTab = state.episodes[0]?.id ?? OVERVIEW;
     saveState();
@@ -486,7 +487,7 @@ function normalizeActiveTab() {
 }
 
 function activeEpisode() {
-  if (state.activeTab === OVERVIEW || state.activeTab === CAST || state.activeTab === EVENT_BANK || state.activeTab === WEEKLY_RECAP || state.activeTab === MY_STATS || state.activeTab === ABOUT) return null;
+  if (state.activeTab === OVERVIEW || state.activeTab === CAST || state.activeTab === EVENT_BANK || state.activeTab === WEEKLY_RECAP || state.activeTab === MY_STATS || state.activeTab === ABOUT || state.activeTab === ADMIN) return null;
   return getEpisode(state.activeTab);
 }
 
@@ -1152,6 +1153,7 @@ function updateViewVisibility() {
   const viewWeeklyRecap = document.getElementById("view-weekly-recap");
   const viewMyStats = document.getElementById("view-my-stats");
   const viewAbout = document.getElementById("view-about");
+  const viewAdmin = document.getElementById("view-admin");
   const episodeMain = document.getElementById("episode-workspace");
   const extras = document.getElementById("episode-extras");
   const onOverview = state.activeTab === OVERVIEW;
@@ -1161,9 +1163,10 @@ function updateViewVisibility() {
   const onWeeklyRecap = state.activeTab === WEEKLY_RECAP;
   const onMyStats = state.activeTab === MY_STATS;
   const onAbout = state.activeTab === ABOUT;
-  const onEpisode = !onOverview && !onCast && !onEventBank && !onSeasonBets && !onWeeklyRecap && !onMyStats && !onAbout;
-  const allViews = [viewOverview, viewCast, viewEventBank, viewSeasonBets, viewWeeklyRecap, viewMyStats, viewAbout, episodeMain];
-  const activeFlags = [onOverview, onCast, onEventBank, onSeasonBets, onWeeklyRecap, onMyStats, onAbout, onEpisode];
+  const onAdmin = state.activeTab === ADMIN;
+  const onEpisode = !onOverview && !onCast && !onEventBank && !onSeasonBets && !onWeeklyRecap && !onMyStats && !onAbout && !onAdmin;
+  const allViews = [viewOverview, viewCast, viewEventBank, viewSeasonBets, viewWeeklyRecap, viewMyStats, viewAbout, viewAdmin, episodeMain];
+  const activeFlags = [onOverview, onCast, onEventBank, onSeasonBets, onWeeklyRecap, onMyStats, onAbout, onAdmin, onEpisode];
   allViews.forEach((v, i) => {
     if (!v) return;
     const show = activeFlags[i];
@@ -1798,6 +1801,7 @@ function renderMainTabs() {
     { id: SEASON_BETS, label: "Season bets" },
     { id: MY_STATS, label: "Player stats" },
     { id: ABOUT, label: "About" },
+    { id: ADMIN, label: "Admin", admin: true },
   ];
 
   function activateTab(id) {
@@ -1811,6 +1815,7 @@ function renderMainTabs() {
     if (id === WEEKLY_RECAP) renderWeeklyRecap();
       if (id === MY_STATS) renderMyStats();
       if (id === ABOUT) renderAbout();
+      if (id === ADMIN) renderAdminPanel();
     }
 
   function activateEpisode(epId) {
@@ -1830,26 +1835,20 @@ function renderMainTabs() {
     return "Menu";
   }
 
-  /* ── desktop tabs (unchanged) ── */
+  /* ── desktop tabs ── */
   const desktopRow = document.createElement("div");
   desktopRow.className = "tabs-desktop";
 
-  pages.forEach(({ id, label }) => {
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "tab";
-    btn.textContent = label;
-    btn.setAttribute("role", "tab");
-    btn.setAttribute("aria-selected", state.activeTab === id ? "true" : "false");
-    btn.addEventListener("click", () => activateTab(id));
-    desktopRow.append(btn);
-  });
+  const overviewBtn = document.createElement("button");
+  overviewBtn.type = "button";
+  overviewBtn.className = "tab";
+  overviewBtn.textContent = "Overview";
+  overviewBtn.setAttribute("role", "tab");
+  overviewBtn.setAttribute("aria-selected", state.activeTab === OVERVIEW ? "true" : "false");
+  overviewBtn.addEventListener("click", () => activateTab(OVERVIEW));
+  desktopRow.append(overviewBtn);
 
   if (state.episodes.length) {
-    const sep = document.createElement("span");
-    sep.className = "tab-separator";
-    desktopRow.append(sep);
-
     const select = document.createElement("select");
     select.className = "tab-episode-select" + (isOnEpisode ? " tab-episode-select--active" : "");
     if (!isOnEpisode) {
@@ -1871,6 +1870,21 @@ function renderMainTabs() {
     select.addEventListener("change", () => { if (select.value) activateEpisode(select.value); });
     desktopRow.append(select);
   }
+
+  const spacer = document.createElement("span");
+  spacer.className = "tab-spacer";
+  desktopRow.append(spacer);
+
+  pages.filter(p => p.id !== OVERVIEW).forEach(({ id, label, admin }) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = admin ? "tab tab--admin" : "tab";
+    btn.textContent = label;
+    btn.setAttribute("role", "tab");
+    btn.setAttribute("aria-selected", state.activeTab === id ? "true" : "false");
+    btn.addEventListener("click", () => activateTab(id));
+    desktopRow.append(btn);
+  });
   root.append(desktopRow);
 
   /* ── mobile menu ── */
@@ -1905,10 +1919,10 @@ function renderMainTabs() {
   drawerTitle.textContent = "Navigate";
   drawer.append(drawerTitle);
 
-  pages.forEach(({ id, label: lbl }) => {
+  pages.forEach(({ id, label: lbl, admin }) => {
     const item = document.createElement("button");
     item.type = "button";
-    item.className = "mobile-drawer__item" + (state.activeTab === id ? " mobile-drawer__item--active" : "");
+    item.className = "mobile-drawer__item" + (state.activeTab === id ? " mobile-drawer__item--active" : "") + (admin ? " mobile-drawer__item--admin" : "");
     item.textContent = lbl;
     item.addEventListener("click", () => { drawer.hidden = true; backdrop.hidden = true; activateTab(id); });
     drawer.append(item);
@@ -2640,37 +2654,8 @@ function renderSeasonBets() {
     if (locked) {
       const badge = document.createElement("span");
       badge.className = "season-lock-badge season-lock-badge--locked";
-      badge.textContent = "Season bets are locked";
+      badge.textContent = "Season bets are locked \u2014 unlock via Admin panel";
       lockBar.append(badge);
-
-      const unlockBtn = document.createElement("button");
-      unlockBtn.type = "button";
-      unlockBtn.className = "btn btn--secondary btn--season-unlock";
-      unlockBtn.textContent = "Unlock";
-      unlockBtn.addEventListener("click", () => {
-        const pw = prompt("Enter the admin password to unlock season bets:");
-        if (pw === null) return;
-        if (pw === "halfspace") {
-          state.seasonBetsLocked = false;
-          saveState();
-          renderSeasonBets();
-        } else {
-          alert("Wrong password.");
-        }
-      });
-      lockBar.append(unlockBtn);
-    } else {
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.className = "btn btn--lock btn--season-lock";
-      btn.textContent = "Lock season bets";
-      btn.addEventListener("click", () => {
-        if (!confirm("Lock all season bets? This cannot be undone easily.")) return;
-        state.seasonBetsLocked = true;
-        saveState();
-        renderSeasonBets();
-      });
-      lockBar.append(btn);
     }
   }
 
@@ -3721,6 +3706,309 @@ function renderLeaderboard() {
   renderAllBetsOverview();
 }
 
+/* ── Admin Panel ── */
+
+let adminUnlocked = false;
+
+function renderAdminPanel() {
+  const gate = document.getElementById("admin-gate");
+  const content = document.getElementById("admin-content");
+  if (!gate || !content) return;
+
+  if (!adminUnlocked) {
+    gate.hidden = false;
+    content.hidden = true;
+    const pwInput = document.getElementById("admin-pw");
+    const pwBtn = document.getElementById("admin-pw-submit");
+    const tryUnlock = () => {
+      if (pwInput.value === "amalietechgirly1234") {
+        adminUnlocked = true;
+        renderAdminPanel();
+      } else {
+        pwInput.classList.add("admin-gate__input--error");
+        setTimeout(() => pwInput.classList.remove("admin-gate__input--error"), 600);
+      }
+    };
+    pwBtn.onclick = tryUnlock;
+    pwInput.onkeydown = (e) => { if (e.key === "Enter") tryUnlock(); };
+    pwInput.value = "";
+    setTimeout(() => pwInput.focus(), 50);
+    return;
+  }
+
+  gate.hidden = true;
+  content.hidden = false;
+  content.innerHTML = "";
+
+  function section(title) {
+    const s = document.createElement("div");
+    s.className = "admin-section";
+    const h = document.createElement("h3");
+    h.className = "admin-section__title";
+    h.textContent = title;
+    s.append(h);
+    content.append(s);
+    return s;
+  }
+
+  function adminBtn(label, cls, handler) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "btn " + cls;
+    b.textContent = label;
+    b.addEventListener("click", handler);
+    return b;
+  }
+
+  /* ── Players ── */
+  const playerSec = section("Manage players");
+  const playerList = document.createElement("ul");
+  playerList.className = "admin-player-list";
+  state.players.forEach((name, i) => {
+    const li = document.createElement("li");
+    li.className = "admin-player-list__item";
+    const span = document.createElement("span");
+    span.textContent = name;
+    const rm = document.createElement("button");
+    rm.type = "button";
+    rm.className = "btn btn--danger-sm";
+    rm.textContent = "Remove";
+    rm.addEventListener("click", () => {
+      removePlayer(i);
+      renderAdminPanel();
+    });
+    li.append(span, rm);
+    playerList.append(li);
+  });
+  playerSec.append(playerList);
+  const addRow = document.createElement("div");
+  addRow.className = "admin-add-row";
+  const addInput = document.createElement("input");
+  addInput.type = "text";
+  addInput.className = "input";
+  addInput.placeholder = "New player name";
+  addInput.maxLength = 24;
+  const addBtn = adminBtn("Add player", "btn--secondary", () => {
+    const n = addInput.value.trim();
+    if (!n || state.players.includes(n)) return;
+    state.players.push(n);
+    saveState();
+    renderAdminPanel();
+    renderAll();
+  });
+  addInput.addEventListener("keydown", (e) => { if (e.key === "Enter") addBtn.click(); });
+  addRow.append(addInput, addBtn);
+  playerSec.append(addRow);
+
+  /* ── Episodes ── */
+  const epSec = section("Episodes");
+  if (state.episodes.length === 0) {
+    const empty = document.createElement("p");
+    empty.className = "admin-hint";
+    empty.textContent = "No episodes yet.";
+    epSec.append(empty);
+  }
+  state.episodes.forEach((ep, idx) => {
+    const row = document.createElement("div");
+    row.className = "admin-episode-row";
+
+    const left = document.createElement("div");
+    left.className = "admin-episode-row__left";
+    const info = document.createElement("span");
+    info.className = "admin-episode-row__info";
+    const status = ep.closed ? " (closed)" : ep.betsLocked ? " (bets locked)" : " (open)";
+    info.textContent = (ep.title || `Episode ${idx + 1}`) + status;
+    left.append(info);
+
+    const fields = document.createElement("div");
+    fields.className = "admin-episode-row__fields";
+    const dateLabel = document.createElement("label");
+    dateLabel.className = "admin-field";
+    dateLabel.textContent = "Air date: ";
+    const dateInput = document.createElement("input");
+    dateInput.type = "date";
+    dateInput.className = "input input--narrow";
+    dateInput.value = ep.airDate || "";
+    dateInput.addEventListener("change", () => {
+      ep.airDate = dateInput.value || null;
+      ep.betsLockDeadline = ep.airDate ? copenhagenMidnight(ep.airDate) : null;
+      delete ep.hasElimination;
+      saveState();
+      renderMainTabs();
+      if (activeEpisode()?.id === ep.id) renderEpisodeContent();
+    });
+    dateLabel.append(dateInput);
+
+    const elimLabel = document.createElement("label");
+    elimLabel.className = "admin-field";
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.checked = isEliminationEpisode(ep);
+    cb.addEventListener("change", () => {
+      ep.hasElimination = cb.checked;
+      saveState();
+      if (activeEpisode()?.id === ep.id) renderEpisodeContent();
+    });
+    elimLabel.append(cb, document.createTextNode(" Rose ceremony"));
+
+    fields.append(dateLabel, elimLabel);
+    left.append(fields);
+    row.append(left);
+
+    const actions = document.createElement("div");
+    actions.className = "admin-episode-row__actions";
+
+    if (!ep.closed && !ep.betsLocked) {
+      actions.append(adminBtn("Lock bets", "btn--warning-sm", () => {
+        if (!confirm(`Lock bets for ${ep.title || "Episode " + (idx + 1)}?`)) return;
+        ep.betsLocked = true;
+        ep.betsLockedAt = Date.now();
+        saveState();
+        renderAdminPanel();
+        renderMainTabs();
+        if (activeEpisode()?.id === ep.id) renderEpisodeContent();
+      }));
+    }
+    if (!ep.closed && ep.betsLocked) {
+      actions.append(adminBtn("Unlock bets", "btn--secondary-sm", () => {
+        ep.betsLocked = false;
+        saveState();
+        renderAdminPanel();
+        renderMainTabs();
+        if (activeEpisode()?.id === ep.id) renderEpisodeContent();
+      }));
+    }
+    if (!ep.closed) {
+      actions.append(adminBtn("Close", "btn--warning-sm", () => {
+        if (!confirm(`Close ${ep.title || "Episode " + (idx + 1)}? Scores will be finalized.`)) return;
+        ep.closed = true;
+        if (!ep.betsLocked) { ep.betsLocked = true; ep.betsLockedAt = Date.now(); }
+        const nextEp = state.episodes[idx + 1];
+        if (!nextEp) {
+          const carryGuys = guysAfterEliminations(ep).map((g) => ({ id: uid(), name: g.name }));
+          const nextAirDate = ep.airDate ? getNextAirDate(new Date(ep.airDate + "T12:00:00")) : null;
+          const betsLockDeadline = nextAirDate ? copenhagenMidnight(nextAirDate) : null;
+          state.episodes.push({ id: uid(), title: `Episode ${state.episodes.length + 1}`, guys: carryGuys, events: [], eliminated: [], betsLocked: false, betsLockedAt: null, betsLockDeadline, airDate: nextAirDate });
+        }
+        saveState();
+        renderAdminPanel();
+        renderMainTabs();
+        renderLeaderboard();
+      }));
+    }
+    if (ep.closed) {
+      actions.append(adminBtn("Reopen", "btn--secondary-sm", () => {
+        if (!confirm(`Reopen ${ep.title || "Episode " + (idx + 1)}? Be careful.`)) return;
+        ep.closed = false;
+        ep.betsLocked = false;
+        saveState();
+        renderAdminPanel();
+        renderMainTabs();
+        if (activeEpisode()?.id === ep.id) renderEpisodeContent();
+      }));
+    }
+    actions.append(adminBtn("Delete", "btn--danger-sm", () => {
+      if (!confirm(`Delete ${ep.title || "Episode " + (idx + 1)}? This cannot be undone.`)) return;
+      state.episodes.splice(idx, 1);
+      if (state.activeTab === ep.id) state.activeTab = OVERVIEW;
+      saveState();
+      renderAdminPanel();
+      renderMainTabs();
+      updateViewVisibility();
+      renderLeaderboard();
+    }));
+
+    row.append(actions);
+    epSec.append(row);
+  });
+
+  const addEpBtn = adminBtn("+ Add episode", "btn--secondary", () => {
+    const n = state.episodes.length + 1;
+    const prevEp = state.episodes.length > 0 ? state.episodes[state.episodes.length - 1] : null;
+    const carryGuys = prevEp ? guysAfterEliminations(prevEp).map((g) => ({ id: uid(), name: g.name })) : [];
+    const newEp = { id: uid(), title: `Episode ${n}`, guys: carryGuys, events: [], eliminated: [], betsLocked: false, betsLockedAt: null, betsLockDeadline: null, airDate: null };
+    state.episodes.push(newEp);
+    saveState();
+    renderAdminPanel();
+    renderMainTabs();
+  });
+  epSec.append(addEpBtn);
+
+  /* ── Season Bets Lock ── */
+  const seasonSec = section("Season bets");
+  const lockStatus = document.createElement("p");
+  lockStatus.className = "admin-hint";
+  lockStatus.textContent = state.seasonBetsLocked ? "Season bets are currently locked." : "Season bets are currently open.";
+  seasonSec.append(lockStatus);
+  if (state.seasonBetsLocked) {
+    seasonSec.append(adminBtn("Unlock season bets", "btn--secondary", () => {
+      state.seasonBetsLocked = false;
+      saveState();
+      renderAdminPanel();
+    }));
+  } else {
+    seasonSec.append(adminBtn("Lock season bets", "btn--warning", () => {
+      if (!confirm("Lock all season bets? Players won\u2019t be able to change their picks.")) return;
+      state.seasonBetsLocked = true;
+      saveState();
+      renderAdminPanel();
+    }));
+  }
+
+  /* ── Data Management ── */
+  const dataSec = section("Data management");
+  const dataActions = document.createElement("div");
+  dataActions.className = "admin-data-actions";
+  dataActions.append(adminBtn("Restore from backup", "btn--secondary", async () => {
+    try {
+      const snap = await fbDb.ref("backups").orderByKey().limitToLast(10).once("value");
+      const backups = snap.val();
+      if (!backups) { alert("No backups found."); return; }
+      const keys = Object.keys(backups).sort().reverse();
+      const list = keys.map((k, i) => `${i + 1}. ${k}`).join("\n");
+      const choice = prompt("Available backups:\n\n" + list + "\n\nEnter the number to restore:");
+      const idx = parseInt(choice, 10) - 1;
+      if (isNaN(idx) || idx < 0 || idx >= keys.length) return;
+      if (!confirm("Restore backup from " + keys[idx] + "? This will overwrite current data.")) return;
+      const restored = backups[keys[idx]];
+      suppressFirebaseWrite = true;
+      state = { ...defaultState(), ...restored, activeTab: state.activeTab };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      suppressFirebaseWrite = false;
+      saveState();
+      renderAll();
+      renderAdminPanel();
+      showToast("Restored backup from " + keys[idx]);
+    } catch (e) {
+      console.error("Restore failed:", e);
+      alert("Failed to load backups.");
+    }
+  }));
+  dataActions.append(adminBtn("Reset all data", "btn--danger", () => {
+    const typed = prompt('This will erase ALL episodes, bets, and scores.\n\nA backup will be saved automatically.\n\nType DELETE to confirm:');
+    if (typed !== "DELETE") return;
+    const backup = sharedState();
+    const ts = new Date().toISOString().replace(/[:.]/g, "-");
+    fbDb.ref("backups/" + ts).set(backup).catch((e) => console.error("Backup failed:", e));
+    localStorage.removeItem(STORAGE_KEY);
+    state = defaultState();
+    saveState();
+    renderAll();
+    renderAdminPanel();
+    showToast("Data reset. Backup saved as " + ts);
+  }));
+  dataSec.append(dataActions);
+
+  /* ── Lock admin ── */
+  const lockSec = document.createElement("div");
+  lockSec.className = "admin-section admin-section--lock";
+  lockSec.append(adminBtn("Lock admin panel", "btn--ghost", () => {
+    adminUnlocked = false;
+    renderAdminPanel();
+  }));
+  content.append(lockSec);
+}
+
 function renderAllBetsOverview() {
   const root = document.getElementById("overview-all-bets");
   if (!root) return;
@@ -4292,42 +4580,7 @@ function renderEpisodeContent() {
   if (unlockBetsBtn) unlockBetsBtn.hidden = closed || !ep?.betsLocked;
 
   const airDateBar = document.getElementById("episode-airdate-bar");
-  if (airDateBar && ep) {
-    airDateBar.hidden = closed;
-    airDateBar.innerHTML = "";
-    if (!closed) {
-      const label = document.createElement("span");
-      label.className = "episode-airdate-bar__label";
-      label.textContent = "Air date:";
-      const input = document.createElement("input");
-      input.type = "date";
-      input.className = "input input--narrow episode-airdate-bar__input";
-      input.value = ep.airDate || "";
-      input.addEventListener("change", () => {
-        ep.airDate = input.value || null;
-        ep.betsLockDeadline = ep.airDate ? copenhagenMidnight(ep.airDate) : null;
-        delete ep.hasElimination;
-        saveState();
-        renderEpisodeContent();
-        renderMainTabs();
-      });
-
-      const elimLabel = document.createElement("label");
-      elimLabel.className = "episode-airdate-bar__elim-toggle";
-      const cb = document.createElement("input");
-      cb.type = "checkbox";
-      cb.checked = isEliminationEpisode(ep);
-      cb.addEventListener("change", () => {
-        ep.hasElimination = cb.checked;
-        saveState();
-        renderEpisodeContent();
-      });
-      elimLabel.append(cb, document.createTextNode(" Rose ceremony"));
-      airDateBar.append(label, input, elimLabel);
-    }
-  } else if (airDateBar) {
-    airDateBar.hidden = true;
-  }
+  if (airDateBar) airDateBar.hidden = true;
 
   const hasElim = ep ? isEliminationEpisode(ep) : true;
   const elimBetsSection = document.querySelector('#episode-workspace [aria-labelledby="elim-bets-heading"]');
