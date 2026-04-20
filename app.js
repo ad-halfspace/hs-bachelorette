@@ -3506,21 +3506,25 @@ function renderAbout() {
   root.innerHTML = `
 <header class="about-hero">
   <h1 class="about__h1" id="about-heading">About</h1>
-  <p class="about-hero__tagline">The story behind the bets and the cutest column.</p>
+  <p class="about-hero__tagline">The story behind the bets, the tournament, and the cutest column.</p>
 </header>
 
 <article class="about-body">
 
 <section class="about-split">
   <div class="about-split__label">
-    <span class="about-split__label-text">The Idea</span>
+    <span class="about-split__label-text">The Origin</span>
   </div>
   <div class="about-split__content">
-    <p class="about__lede">A Bachelorette betting pool for the Halfspace crew.</p>
-    <p>Every episode, each player picks <strong>three events</strong> they think will happen from a shared bet bank. Each event carries odds \u2014 rarer events pay more if you\u2019re right. You get points equal to the odds for every correct pick, and zero for wrong ones.</p>
-    <p>On <strong>rose ceremony nights</strong>, there\u2019s an extra bet: who\u2019s going home? Nail the elimination and you earn bonus points on top of your regular picks.</p>
-    <p>There are also <strong>season bets</strong> \u2014 long-range predictions you lock in early (like who wins, first kiss, biggest villain). These pay out at the end of the season and can swing the leaderboard.</p>
-    <p>Finally, there\u2019s the <strong>\u201Cseason\u2019s cutest\u201D</strong> column \u2014 zero points, pure vibes. Each Thursday you pick which contestant you thought was cutest that week. It\u2019s not strategy, it\u2019s a feelings column. A running tally shows who the group collectively finds most adorable.</p>
+    <p class="about__lede">This didn\u2019t start at Halfspace. It started last year as a shared iCloud note.</p>
+    <p>Two columns. One for betting on who\u2019d go home each week. One labeled \u201Ccutest\u201D \u2014 a completely non-serious column where we logged who we thought was cute. It was worth zero points. It had no competitive value. It mattered just as much as everything else.</p>
+    <p>We tracked it for a full season. Eliminations, gut feelings, and increasingly heated disagreements about attractiveness. The format itself wasn\u2019t new either \u2014 it traced back to a Game of Thrones pool that was competitive, suspiciously accurate, and probably closer to gambling than anyone admitted at the time.</p>
+    <p>At some point, Amalie turned the whole thing into an actual betting app. Real odds, real events, leaderboard, the works.</p>
+    <p>Rune noticed.</p>
+    <p>As Halfspace\u2019s most dedicated reality love show enthusiast, he\u2019d already been arguing that we should be doing something with Bacheloretten. Not just watching it \u2014 competing over it. Seeing what Amalie had built made it obvious.</p>
+    <p>So now we do.</p>
+    <p>This is the third generation of the same idea: a full Bachelorette betting tournament for the Halfspace crew. Real odds, real events, real infrastructure.</p>
+    <p>And yes \u2014 the \u201Ccutest\u201D column is still here. Still worth zero points. Still completely essential.</p>
   </div>
 </section>
 
@@ -3536,35 +3540,35 @@ function renderAbout() {
         <span class="about-numbered__num">01</span>
         <div class="about-numbered__body">
           <h3 class="about-numbered__title">Pick your bets</h3>
-          <p>Before each episode airs, every player picks <strong>3 events</strong> from the shared bet bank \u2014 things like \u201Csomeone cries,\u201D \u201Ca group date goes wrong,\u201D or \u201Csomeone says \u2018I\u2019m not here to make friends.\u2019\u201D Each event has odds attached: the less likely it is, the more points it\u2019s worth if it happens.</p>
+          <p>Before each episode airs, each of us picks <strong>3 events</strong> from a bank of way too many bets \u2014 things like \u201Csomeone cries,\u201D \u201Ca group date goes wrong,\u201D or \u201CStig Rossen makes an appearance.\u201D Each event has odds. Rarer events pay more. This is gambling for people who are too anxious to actually gamble, despite working in a company that was built on gambling.</p>
         </div>
       </div>
       <div class="about-numbered__item">
         <span class="about-numbered__num">02</span>
         <div class="about-numbered__body">
           <h3 class="about-numbered__title">Rose ceremony nights</h3>
-          <p>Some episodes end with a rose ceremony \u2014 someone goes home. On these nights there\u2019s an <strong>extra elimination bet</strong>: pick which contestant you think is leaving. Get it right and you earn bonus points on top of your regular picks.</p>
+          <p>Thursdays come with a rose ceremony, which adds an <strong>extra elimination bet</strong>: who\u2019s going home? Correct guesses pay out based on how many contestants are still in the running. Early-season guesses are genuinely hard. Late-season guesses are mostly vibes.</p>
         </div>
       </div>
       <div class="about-numbered__item">
         <span class="about-numbered__num">03</span>
         <div class="about-numbered__body">
           <h3 class="about-numbered__title">Bets lock automatically</h3>
-          <p>At midnight on air day, all bets lock \u2014 no late entries, no edits, no mercy. Watch the episode however you like; the app doesn\u2019t care as long as your picks were in on time.</p>
+          <p>At midnight on air day, all bets lock \u2014 no late entries, no edits, no mercy. We\u2019re colleagues. We still don\u2019t trust each other.</p>
         </div>
       </div>
       <div class="about-numbered__item">
         <span class="about-numbered__num">04</span>
         <div class="about-numbered__body">
           <h3 class="about-numbered__title">Mark what happened</h3>
-          <p>After the episode, the admin ticks off which events actually occurred and who got eliminated. Points are calculated automatically and the leaderboard updates instantly.</p>
+          <p>After the episode, the admin ticks off what actually happened and who got eliminated. Points get tallied automatically and the leaderboard updates instantly.</p>
         </div>
       </div>
       <div class="about-numbered__item">
         <span class="about-numbered__num">05</span>
         <div class="about-numbered__body">
           <h3 class="about-numbered__title">Season\u2019s cutest</h3>
-          <p>Every Thursday, each player picks which contestant they thought was cutest that week. It\u2019s worth zero points \u2014 pure vibes, no strategy. A running tally on the overview page shows who the group collectively finds most adorable across the season.</p>
+          <p>Every Thursday, each player picks which contestant they thought was cutest that week. It\u2019s worth zero points \u2014 pure vibes, no strategy. A running tally on the overview page shows who the group collectively finds most adorable. It\u2019s a feelings column.</p>
         </div>
       </div>
       <div class="about-numbered__item">
@@ -3596,17 +3600,31 @@ function renderAbout() {
 
 <section class="about-split">
   <div class="about-split__label">
+    <span class="about-split__label-text">Our Approach</span>
+  </div>
+  <div class="about-split__content">
+    <p class="about__lede">Fun before fair. Always.</p>
+    <p>Perfect odds would make this a math exercise. We have spreadsheets at work. We did not build this to use another spreadsheet. A 20\u00D7 bet on something absurd happening is the entire personality of this site.</p>
+    <p>There are no accounts, no logins. One shared state, Firebase doing the actual work. If we can\u2019t trust each other not to tamper with the database, the team spirit is cooked anyway and no login screen is going to save it.</p>
+    <p>Odds aren\u2019t sacred. We tune them between episodes. If \u201Csomeone cries\u201D keeps happening 100% of the time, that is feedback from the universe and we take it seriously.</p>
+  </div>
+</section>
+
+<hr class="about-divider" />
+
+<section class="about-split">
+  <div class="about-split__label">
     <span class="about-split__label-text">Fair Play</span>
   </div>
   <div class="about-split__content">
     <div class="about-fairplay">
       <div class="about-fairplay__block">
         <h3 class="about-fairplay__heading about-fairplay__heading--red">What counts as cheating</h3>
-        <p>Watching the episode before locking your bets. That\u2019s it. That\u2019s the line.</p>
+        <p>Waiting to see what happens in an episode before locking in your bets. That\u2019s why betting closes at midnight on air day. We love each other. We don\u2019t trust each other.</p>
       </div>
       <div class="about-fairplay__block">
         <h3 class="about-fairplay__heading about-fairplay__heading--green">What doesn\u2019t</h3>
-        <p>Everything else. Strategic bets, Instagram scouting, reading spoiler forums, elaborate spreadsheet analysis \u2014 all fair game. If it happens before the deadline, it\u2019s fair play. Hustle is rewarded.</p>
+        <p>Almost everything else. Betting strategically against a friend: yes. Building a color-coded tracker of which contestant cries on which day: enthusiastically yes. Stalking the contestants on Instagram for scouting intel: we call that research. If it happens before the deadline, it\u2019s fair play and arguably heroic.</p>
       </div>
     </div>
   </div>
