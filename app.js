@@ -3040,6 +3040,8 @@ function renderAllPlayersOverview(root) {
 
   const section = document.createElement("div");
   section.className = "ms-section ms-matchday";
+  section.style.setProperty("--player-count", state.players.length);
+  if (state.players.length > 4) section.style.overflowX = "auto";
 
   const statRows = [
     { label: "Total points", fn: (s) => s.overview.totalPoints.toFixed(1), cmp: "high" },
