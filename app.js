@@ -54,10 +54,112 @@ const firebaseConfig = {
   measurementId: "G-SW4ZL1F6B7",
 };
 const fbApp = firebase.initializeApp(firebaseConfig);
+const fbAuth = firebase.auth();
 const fbDb = firebase.database();
 const fbRef = fbDb.ref("state");
 let firebaseReady = false;
 let suppressFirebaseWrite = false;
+
+const ADMIN_EMAIL = "amalie.dam@halfspace.ai";
+
+function isAdmin() {
+  const user = fbAuth.currentUser;
+  return user && user.email === ADMIN_EMAIL && user.emailVerified === true;
+}
+
+async function initAuth() {
+  if (firebase.auth.isSignInWithEmailLink(fbAuth, window.location.href)) {
+    let email = window.localStorage.getItem("emailForSignIn");
+    if (!email) {
+      email = window.prompt("Confirm your email for admin sign-in");
+    }
+    try {
+      if (fbAuth.currentUser && fbAuth.currentUser.isAnonymous) {
+        const credential = firebase.auth.EmailAuthProvider.credentialWithLink(
+          email, window.location.href
+        );
+        await fbAuth.currentUser.linkWithCredential(credential);
+      } else {
+        await fbAuth.signInWithEmailLink(email, window.location.href);
+      }
+      window.localStorage.removeItem("emailForSignIn");
+      window.history.replaceState({}, "", window.location.pathname);
+    } catch (err) {
+      console.error("Admin sign-in failed", err);
+      if (err.code === "auth/provider-already-linked" || err.code === "auth/email-already-in-use") {
+        await fbAuth.signInWithEmailLink(email, window.location.href);
+        window.localStorage.removeItem("emailForSignIn");
+        window.history.replaceState({}, "", window.location.pathname);
+      } else {
+        alert("Sign-in link invalid or expired. Request a new one from the admin sign-in.");
+      }
+    }
+  }
+
+  if (!fbAuth.currentUser) {
+    await fbAuth.signInAnonymously();
+  }
+
+  await new Promise((resolve) => {
+    const unsub = fbAuth.onAuthStateChanged((u) => {
+      if (u) { unsub(); resolve(); }
+    });
+  });
+}
+
+async function sendAdminLink(email) {
+  const actionCodeSettings = {
+    url: window.location.origin + "/?adminSignIn=1",
+    handleCodeInApp: true,
+  };
+  await firebase.auth().sendSignInLinkToEmail(email, actionCodeSettings);
+  window.localStorage.setItem("emailForSignIn", email);
+  alert("Check your email for a sign-in link. Check spam if it doesn\u2019t arrive within a minute.");
+}
+
+async function signOutAdmin() {
+  await fbAuth.signOut();
+  await fbAuth.signInAnonymously();
+  renderAdminSignInBar();
+  renderMainTabs();
+  updateViewVisibility();
+  if (state.activeTab === ADMIN) {
+    state.activeTab = OVERVIEW;
+    saveState();
+  }
+  renderAll();
+}
+
+function renderAdminSignInBar() {
+  const bar = document.getElementById("admin-signin-bar");
+  if (!bar) return;
+  bar.innerHTML = "";
+  if (isAdmin()) {
+    const badge = document.createElement("span");
+    badge.className = "admin-signin-bar__badge";
+    badge.textContent = "Admin mode";
+    const signOutBtn = document.createElement("button");
+    signOutBtn.type = "button";
+    signOutBtn.className = "btn btn--ghost btn--xs";
+    signOutBtn.textContent = "Sign out";
+    signOutBtn.addEventListener("click", signOutAdmin);
+    bar.append(badge, signOutBtn);
+  } else {
+    const link = document.createElement("button");
+    link.type = "button";
+    link.className = "admin-signin-bar__link";
+    link.textContent = "Admin sign-in";
+    link.addEventListener("click", () => {
+      const email = prompt("Enter admin email:");
+      if (!email) return;
+      sendAdminLink(email).catch((err) => {
+        console.error("Failed to send sign-in link:", err);
+        alert("Failed to send sign-in link. Check the email and try again.");
+      });
+    });
+    bar.append(link);
+  }
+}
 
 function builtInBetEvents() {
   return typeof MASTER_BET_EVENTS !== "undefined" && Array.isArray(MASTER_BET_EVENTS)
@@ -1876,6 +1978,7 @@ function renderMainTabs() {
   desktopRow.append(spacer);
 
   pages.filter(p => p.id !== OVERVIEW).forEach(({ id, label, admin }) => {
+    if (admin && !isAdmin()) return;
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = admin ? "tab tab--admin" : "tab";
@@ -1920,6 +2023,7 @@ function renderMainTabs() {
   drawer.append(drawerTitle);
 
   pages.forEach(({ id, label: lbl, admin }) => {
+    if (admin && !isAdmin()) return;
     const item = document.createElement("button");
     item.type = "button";
     item.className = "mobile-drawer__item" + (state.activeTab === id ? " mobile-drawer__item--active" : "") + (admin ? " mobile-drawer__item--admin" : "");
@@ -3364,7 +3468,11 @@ function renderStatsFavoriteEvents(root, stats) {
     const tbody = document.createElement("tbody");
     for (const e of data.slice(0, 5)) {
       const tr = document.createElement("tr");
-      tr.innerHTML = `<td class="ms-table__event">${e.text}</td><td>${e.bet}</td><td>${e.hit}</td><td>${e.hitRate}%</td>`;
+      const tdEv = document.createElement("td"); tdEv.className = "ms-table__event"; tdEv.textContent = e.text;
+      const tdBet = document.createElement("td"); tdBet.textContent = e.bet;
+      const tdHit = document.createElement("td"); tdHit.textContent = e.hit;
+      const tdRate = document.createElement("td"); tdRate.textContent = e.hitRate + "%";
+      tr.append(tdEv, tdBet, tdHit, tdRate);
       tbody.append(tr);
     }
     tbl.append(tbody);
@@ -3617,6 +3725,8 @@ function renderAbout() {
   </div>
 </section>
 
+<p class="about-privacy">Game data is stored on Firebase (Google) in the EU. To request deletion, contact <a href="mailto:amalie.dam@halfspace.ai">amalie.dam@halfspace.ai</a>.</p>
+
 </article>
 
 `;
@@ -3708,31 +3818,22 @@ function renderLeaderboard() {
 
 /* ── Admin Panel ── */
 
-let adminUnlocked = false;
-
 function renderAdminPanel() {
   const gate = document.getElementById("admin-gate");
   const content = document.getElementById("admin-content");
   if (!gate || !content) return;
 
-  if (!adminUnlocked) {
+  if (!isAdmin()) {
     gate.hidden = false;
     content.hidden = true;
-    const pwInput = document.getElementById("admin-pw");
-    const pwBtn = document.getElementById("admin-pw-submit");
-    const tryUnlock = () => {
-      if (pwInput.value === "amalietechgirly1234") {
-        adminUnlocked = true;
-        renderAdminPanel();
-      } else {
-        pwInput.classList.add("admin-gate__input--error");
-        setTimeout(() => pwInput.classList.remove("admin-gate__input--error"), 600);
-      }
-    };
-    pwBtn.onclick = tryUnlock;
-    pwInput.onkeydown = (e) => { if (e.key === "Enter") tryUnlock(); };
-    pwInput.value = "";
-    setTimeout(() => pwInput.focus(), 50);
+    gate.innerHTML = "";
+    const title = document.createElement("h2");
+    title.className = "admin-gate__title";
+    title.textContent = "Admin panel";
+    const hint = document.createElement("p");
+    hint.className = "admin-gate__hint";
+    hint.textContent = "You need to be signed in as admin to access this panel. Use the admin sign-in link at the bottom of the page.";
+    gate.append(title, hint);
     return;
   }
 
@@ -3997,16 +4098,43 @@ function renderAdminPanel() {
     renderAdminPanel();
     showToast("Data reset. Backup saved as " + ts);
   }));
+  dataActions.append(adminBtn("Download backup (JSON)", "btn--secondary", () => {
+    const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `bachelorette-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }));
+  dataActions.append(adminBtn("Upload backup (JSON)", "btn--secondary", () => {
+    const fileInput = document.createElement("input");
+    fileInput.type = "file";
+    fileInput.accept = ".json";
+    fileInput.addEventListener("change", async () => {
+      const file = fileInput.files[0];
+      if (!file) return;
+      if (!confirm("This will overwrite the current season state. Are you sure?")) return;
+      try {
+        const text = await file.text();
+        const restored = JSON.parse(text);
+        suppressFirebaseWrite = true;
+        state = { ...defaultState(), ...restored, activeTab: state.activeTab };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        suppressFirebaseWrite = false;
+        saveState();
+        renderAll();
+        renderAdminPanel();
+        showToast("Restored from uploaded backup");
+      } catch (e) {
+        console.error("Upload restore failed:", e);
+        alert("Invalid backup file.");
+      }
+    });
+    fileInput.click();
+  }));
   dataSec.append(dataActions);
 
-  /* ── Lock admin ── */
-  const lockSec = document.createElement("div");
-  lockSec.className = "admin-section admin-section--lock";
-  lockSec.append(adminBtn("Lock admin panel", "btn--ghost", () => {
-    adminUnlocked = false;
-    renderAdminPanel();
-  }));
-  content.append(lockSec);
 }
 
 function renderAllBetsOverview() {
@@ -5421,9 +5549,21 @@ function refreshCountdowns() {
 let autoLockIntervalId = null;
 let countdownIntervalId = null;
 
-function init() {
+async function init() {
+  try {
+    await initAuth();
+  } catch (e) {
+    console.error("Auth init failed:", e);
+  }
+
+  const loadingEl = document.getElementById("auth-loading");
+  const appRoot = document.getElementById("app-root");
+  if (loadingEl) loadingEl.hidden = true;
+  if (appRoot) appRoot.hidden = false;
+
   try { renderAll(); } catch (e) { console.error("renderAll failed:", e); }
   try { wireActions(); } catch (e) { console.error("wireActions failed:", e); }
+  renderAdminSignInBar();
   autoLockTick();
   checkDeadlineReminder();
 
@@ -5470,5 +5610,12 @@ function init() {
     suppressFirebaseWrite = false;
   });
 }
+
+window.addEventListener("error", (e) => {
+  console.error("Uncaught error:", e.message, e.filename, e.lineno);
+});
+window.addEventListener("unhandledrejection", (e) => {
+  console.error("Unhandled promise rejection:", e.reason);
+});
 
 init();

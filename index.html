@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
     <title>Halfspace Bachelorette Bets</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8C%B9%3C/text%3E%3C/svg%3E">
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -14,9 +15,12 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
+    <div id="auth-loading" class="auth-loading">
+      <p class="auth-loading__text">Connecting...</p>
+    </div>
     <div class="bg-petals" aria-hidden="true"></div>
     <div class="bg-ambient" aria-hidden="true"></div>
-    <div class="app">
+    <div class="app" id="app-root" hidden>
       <header class="hero" id="site-header">
         <p class="hero__eyebrow">The official Halfspace tournament 2026</p>
         <h1 class="hero__lockup">
@@ -248,14 +252,7 @@
       </section>
 
       <section id="view-admin" class="admin-page" hidden>
-        <div id="admin-gate" class="admin-gate">
-          <h2 class="admin-gate__title">Admin panel</h2>
-          <p class="admin-gate__hint">Enter the admin password to continue.</p>
-          <div class="admin-gate__form">
-            <input type="password" id="admin-pw" class="input admin-gate__input" placeholder="Password" autocomplete="off" />
-            <button type="button" id="admin-pw-submit" class="btn btn--secondary">Unlock</button>
-          </div>
-        </div>
+        <div id="admin-gate" class="admin-gate"></div>
         <div id="admin-content" class="admin-content" hidden></div>
       </section>
 
@@ -387,9 +384,11 @@
         <div class="footer__bottom">
           <span class="footer__note">Synced live across all devices.</span>
         </div>
+        <div id="admin-signin-bar" class="admin-signin-bar"></div>
       </footer>
     </div>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
     <script defer src="events-bank-data.js"></script>
     <script defer src="app.js"></script>

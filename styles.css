@@ -5360,3 +5360,65 @@ a, button, select, .cast-card, .panel, .elim-card, .result-item, .season-card {
     flex-direction: column;
   }
 }
+
+/* ── Auth loading ── */
+.auth-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  font-family: var(--font-display);
+}
+.auth-loading__text {
+  font-size: 1.1rem;
+  color: var(--ink-soft);
+  letter-spacing: 0.04em;
+}
+
+/* ── Admin sign-in bar ── */
+.admin-signin-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  margin-top: 0.75rem;
+  font-size: 0.75rem;
+}
+.admin-signin-bar__badge {
+  background: var(--gold-mid);
+  color: #fff;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.admin-signin-bar__link {
+  background: none;
+  border: none;
+  color: var(--ink-soft);
+  font-size: 0.72rem;
+  cursor: pointer;
+  opacity: 0.4;
+  transition: opacity var(--duration) var(--ease);
+  font-family: inherit;
+}
+.admin-signin-bar__link:hover {
+  opacity: 0.8;
+}
+.btn--xs {
+  font-size: 0.68rem;
+  padding: 0.2rem 0.5rem;
+}
+
+.about-privacy {
+  margin-top: 2rem;
+  font-size: 0.75rem;
+  color: var(--ink-soft);
+  opacity: 0.6;
+  text-align: center;
+}
+.about-privacy a {
+  color: inherit;
+}
