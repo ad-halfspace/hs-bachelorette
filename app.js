@@ -1855,7 +1855,7 @@ function renderMainTabs() {
     if (!isOnEpisode) {
       const placeholder = document.createElement("option");
       placeholder.value = "";
-      placeholder.textContent = "Episodes\u2026";
+      placeholder.textContent = "Episode bets \u25BE";
       placeholder.disabled = true;
       placeholder.selected = true;
       select.append(placeholder);
