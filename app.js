@@ -3516,15 +3516,12 @@ function renderAbout() {
     <span class="about-split__label-text">The Origin</span>
   </div>
   <div class="about-split__content">
-    <p class="about__lede">This didn\u2019t start at Halfspace. It started last year as a shared iCloud note.</p>
-    <p>Two columns. One for betting on who\u2019d go home each week. One labeled \u201Ccutest\u201D \u2014 a completely non-serious column where we logged who we thought was cute. It was worth zero points. It had no competitive value. It mattered just as much as everything else.</p>
-    <p>We tracked it for a full season. Eliminations, gut feelings, and increasingly heated disagreements about attractiveness. The format itself wasn\u2019t new either \u2014 it traced back to a Game of Thrones pool that was competitive, suspiciously accurate, and probably closer to gambling than anyone admitted at the time.</p>
-    <p>At some point, Amalie turned the whole thing into an actual betting app. Real odds, real events, leaderboard, the works.</p>
-    <p>Rune noticed.</p>
-    <p>As Halfspace\u2019s most dedicated reality love show enthusiast, he\u2019d already been arguing that we should be doing something with Bacheloretten. Not just watching it \u2014 competing over it. Seeing what Amalie had built made it obvious.</p>
+    <p class="about__lede">This didn\u2019t start at Halfspace. It started last year as a shared iCloud note for Amalie and her high school friends.</p>
+    <p>Two columns. One for betting on who\u2019d go home each week. One labeled \u201Ccutest\u201D \u2014 a completely non-serious column where they logged who they thought was cute. It was worth zero points. It had no competitive value. But it mattered just as much as everything else.</p>
+    <p>After becoming a certified tech girly by the power vested in her through Cursor, Amalie turned the whole thing into an actual betting app. Real odds, real events, leaderboard, the works. However, as the lowly S&amp;E\u2019er she is, she needed help. She didn\u2019t know how GitHub worked, or anything about what Cursor had actually built for her. Rune was the knight in shining armor. But just helping wasn\u2019t enough for him. He wanted in.</p>
+    <p>As Halfspace\u2019s most dedicated reality love show enthusiast (try asking him about Swedish Love is Blind, I dare you), he was desperate to get in on the betting. We come from games after all. We needed a Halfspace Bachelorette tournament.</p>
     <p>So now we do.</p>
-    <p>This is the third generation of the same idea: a full Bachelorette betting tournament for the Halfspace crew. Real odds, real events, real infrastructure.</p>
-    <p>And yes \u2014 the \u201Ccutest\u201D column is still here. Still worth zero points. Still completely essential.</p>
+    <p>Real odds, real events, real infrastructure. And yes \u2014 the \u201Ccutest\u201D column is still here. Still worth zero points. Still completely essential. May the best girlypop win.</p>
   </div>
 </section>
 
