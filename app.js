@@ -33,11 +33,12 @@ function likelihoodToOdds(id) {
 }
 
 const SEASON_BET_CATEGORIES = [
-  { key: "final-rose",             label: "The final rose",                    desc: "Who does the bachelorette end up with?",                                              points: 20, inputType: "contestant" },
+  { key: "final-rose-mie",          label: "Mie's final rose",                  desc: "Who does Mie end up with?",                                                            points: 20, inputType: "contestant" },
+  { key: "final-rose-sofie",        label: "Sofie's final rose",                desc: "Who does Sofie end up with?",                                                          points: 20, inputType: "contestant" },
   { key: "first-kiss",             label: "First kiss",                        desc: "Which contestant gets the first kiss?",                                                points: 12, inputType: "contestant" },
   { key: "episode-first-kiss",     label: "Episode of first kiss",             desc: "Pick the episode number (1\u2013N). Closest wins.",                                    points: 12, inputType: "episode" },
   { key: "bachelorette-quits",     label: "Does someone quit early?",          desc: "Does a contestant voluntarily leave? Yes/no.",                                         points: 20, inputType: "yesno" },
-  { key: "first-cry",              label: "First to cry",                      desc: "Which contestant is first to shed a tear?",                                            points: 6,  inputType: "contestant" },
+  { key: "first-cry",              label: "First to cry",                      desc: "Which bachelorette is first to shed a tear — Mie or Sofie?",                           points: 6,  inputType: "bachelorette" },
 ];
 
 /* ── Firebase ── */
@@ -2565,7 +2566,7 @@ function buildSeasonInput(cat, currentVal, locked, onChange) {
     sel.disabled = locked;
     const ph = document.createElement("option");
     ph.value = "";
-    ph.textContent = "\u2014 V\u00E6lg \u2014";
+    ph.textContent = "\u2014 Pick \u2014";
     sel.append(ph);
     for (const n of castNames()) {
       const opt = document.createElement("option");
@@ -2596,9 +2597,9 @@ function buildSeasonInput(cat, currentVal, locked, onChange) {
     sel.disabled = locked;
     const ph = document.createElement("option");
     ph.value = "";
-    ph.textContent = "\u2014 V\u00E6lg \u2014";
+    ph.textContent = "\u2014 Pick \u2014";
     sel.append(ph);
-    for (const v of ["Ja", "Nej"]) {
+    for (const v of ["Yes", "No"]) {
       const opt = document.createElement("option");
       opt.value = v;
       opt.textContent = v;
@@ -2614,7 +2615,7 @@ function buildSeasonInput(cat, currentVal, locked, onChange) {
     sel.disabled = locked;
     const ph = document.createElement("option");
     ph.value = "";
-    ph.textContent = "\u2014 V\u00E6lg \u2014";
+    ph.textContent = "\u2014 Pick \u2014";
     sel.append(ph);
     for (const v of ["Mie", "Sofie"]) {
       const opt = document.createElement("option");
