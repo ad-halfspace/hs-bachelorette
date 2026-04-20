@@ -3520,7 +3520,7 @@ function renderAbout() {
     <p>Two columns. One for betting on who\u2019d go home each week. One labeled \u201Ccutest\u201D \u2014 a completely non-serious column where they logged who they thought was cute. It was worth zero points. It had no competitive value. But it mattered just as much as everything else.</p>
     <p>After becoming a certified tech girly by the power vested in her through Cursor, Amalie turned the whole thing into an actual betting app. Real odds, real events, leaderboard, the works. However, as the lowly S&amp;E\u2019er she is, she needed help. She didn\u2019t know how GitHub worked, or anything about what Cursor had actually built for her. Rune was the knight in shining armor. But just helping wasn\u2019t enough for him. He wanted in.</p>
     <p>As Halfspace\u2019s most dedicated reality love show enthusiast (try asking him about Swedish Love is Blind, I dare you), he was desperate to get in on the betting. We come from games after all. We needed a Halfspace Bachelorette tournament.</p>
-    <p>So now we do.</p>
+    <p>So now we have just that.</p>
     <p>Real odds, real events, real infrastructure. And yes \u2014 the \u201Ccutest\u201D column is still here. Still worth zero points. Still completely essential. May the best girlypop win.</p>
   </div>
 </section>
