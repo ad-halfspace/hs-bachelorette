@@ -1504,6 +1504,7 @@ details[open] > .panel__title--toggle::after {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0 1.5rem;
+  align-items: start;
 }
 
 
