@@ -11,6 +11,27 @@ const ABOUT = "about";
 
 const EXPECTED_SEASON_LENGTH = 30;
 
+const LIKELIHOOD_PRESETS = [
+  { id: "very-likely",  label: "Very likely",  odds: 1.5 },
+  { id: "likely",       label: "Likely",       odds: 2.0 },
+  { id: "coin-flip",    label: "Coin flip",    odds: 3.0 },
+  { id: "unlikely",     label: "Unlikely",     odds: 5.0 },
+  { id: "long-shot",    label: "Long shot",    odds: 8.0 },
+];
+
+function oddsToLikelihood(odds) {
+  const v = Number(odds);
+  if (v <= 1.7) return "very-likely";
+  if (v <= 2.5) return "likely";
+  if (v <= 3.9) return "coin-flip";
+  if (v <= 6.5) return "unlikely";
+  return "long-shot";
+}
+
+function likelihoodToOdds(id) {
+  return LIKELIHOOD_PRESETS.find((p) => p.id === id)?.odds ?? 2.0;
+}
+
 const SEASON_BET_CATEGORIES = [
   { key: "final-rose",             label: "The final rose",                    desc: "Who does the bachelorette end up with?",                                              points: 20, inputType: "contestant" },
   { key: "first-kiss",             label: "First kiss",                        desc: "Which contestant gets the first kiss?",                                                points: 12, inputType: "contestant" },
@@ -1649,14 +1670,57 @@ function renderEventBank() {
 
       const meta = document.createElement("div");
       meta.className = "event-bank-row__meta";
+
+      let currentOdds = Number(odds);
+      const currentLikelihood = oddsToLikelihood(currentOdds);
+
+      const likelihoodSel = document.createElement("select");
+      likelihoodSel.className = "input event-bank-row__likelihood";
+      for (const p of LIKELIHOOD_PRESETS) {
+        const opt = document.createElement("option");
+        opt.value = p.id;
+        opt.textContent = p.label;
+        if (p.id === currentLikelihood) opt.selected = true;
+        likelihoodSel.append(opt);
+      }
+
       const oddsInput = document.createElement("input");
       oddsInput.type = "number";
       oddsInput.className = "input event-bank-row__odds-input";
       oddsInput.min = "1.1";
       oddsInput.max = "99";
       oddsInput.step = "0.1";
-      oddsInput.value = Number(odds).toFixed(1);
-      oddsInput.title = "Adjust base odds";
+      oddsInput.value = currentOdds.toFixed(1);
+      oddsInput.title = "Fine-tune odds";
+
+      oddsInput.addEventListener("change", () => {
+        let v = Number.parseFloat(oddsInput.value);
+        if (Number.isNaN(v) || v < 1.1) { oddsInput.value = currentOdds.toFixed(1); return; }
+        currentOdds = v;
+        if (isCustom) {
+          const entry = state.customBankEvents.find((e) => e.text === text);
+          if (entry) entry.odds = v;
+        } else if (_origText) {
+          state.bankOddsOverrides[_origText] = v;
+        }
+        oddsInput.value = v.toFixed(1);
+        likelihoodSel.value = oddsToLikelihood(v);
+        saveState();
+        updatePreview();
+      });
+
+      likelihoodSel.addEventListener("change", () => {
+        currentOdds = likelihoodToOdds(likelihoodSel.value);
+        if (isCustom) {
+          const entry = state.customBankEvents.find((e) => e.text === text);
+          if (entry) entry.odds = currentOdds;
+        } else if (_origText) {
+          state.bankOddsOverrides[_origText] = currentOdds;
+        }
+        oddsInput.value = currentOdds.toFixed(1);
+        saveState();
+        updatePreview();
+      });
 
       const previewEl = document.createElement("span");
       previewEl.className = "event-bank-row__phase-preview";
@@ -1669,28 +1733,11 @@ function renderEventBank() {
         const total = state.episodes.length;
         const epPh = getEpisodePhase(epIdx, total);
         const mult = getPhaseMultiplier(evPhase, epPh);
-        const base = Number.parseFloat(oddsInput.value) || Number(odds);
-        const adj = computePhaseAdjustedOdds(base, evPhase, epIdx, total);
-        previewEl.textContent = `Will add at ${adj.toFixed(1)}\u00D7 (base ${base.toFixed(1)} \u00D7 ${mult.toFixed(1)} ${epPh} phase)`;
+        const adj = computePhaseAdjustedOdds(currentOdds, evPhase, epIdx, total);
+        previewEl.textContent = `Will add at ${adj.toFixed(1)}\u00D7 (base ${currentOdds.toFixed(1)} \u00D7 ${mult.toFixed(1)} ${epPh} phase)`;
       };
       leftCol.append(previewEl);
 
-      oddsInput.addEventListener("change", () => {
-        let v = Number.parseFloat(oddsInput.value);
-        if (Number.isNaN(v) || v < 1.1) { oddsInput.value = Number(odds).toFixed(1); return; }
-        if (isCustom) {
-          const entry = state.customBankEvents.find((e) => e.text === text);
-          if (entry) entry.odds = v;
-        } else if (_origText) {
-          state.bankOddsOverrides[_origText] = v;
-        }
-        oddsInput.value = v.toFixed(1);
-        saveState();
-        updatePreview();
-      });
-      const oddsWrap = document.createElement("span");
-      oddsWrap.className = "odds-input-wrap";
-      oddsWrap.append(oddsInput);
       const btn = document.createElement("button");
       btn.type = "button";
       btn.className = "btn btn--secondary event-bank-row__btn";
@@ -1701,9 +1748,7 @@ function renderEventBank() {
           alert("Choose an episode in the dropdown first.");
           return;
         }
-        let customOdds = Number.parseFloat(oddsInput.value);
-        if (Number.isNaN(customOdds) || customOdds < 1.1) customOdds = Number(odds);
-        addMasterEventToEpisode(epId, text, customOdds, evPhase);
+        addMasterEventToEpisode(epId, text, currentOdds, evPhase);
       });
 
       const rm = document.createElement("button");
@@ -1725,7 +1770,7 @@ function renderEventBank() {
         populateMasterEventDatalist();
         renderEventBank();
       });
-      meta.append(phaseBadge, oddsWrap, btn, rm);
+      meta.append(phaseBadge, likelihoodSel, oddsInput, btn, rm);
       row.append(leftCol, meta);
       body.append(row);
 
@@ -3491,28 +3536,56 @@ function renderAbout() {
         <span class="about-numbered__num">01</span>
         <div class="about-numbered__body">
           <h3 class="about-numbered__title">Pick your bets</h3>
-          <p>Before the episode airs, each player picks 3 events from the bet bank. Higher odds = less likely = more points if you nail it. On elimination nights, you also pick who you think is going home.</p>
+          <p>Before each episode airs, every player picks <strong>3 events</strong> from the shared bet bank \u2014 things like \u201Csomeone cries,\u201D \u201Ca group date goes wrong,\u201D or \u201Csomeone says \u2018I\u2019m not here to make friends.\u2019\u201D Each event has odds attached: the less likely it is, the more points it\u2019s worth if it happens.</p>
         </div>
       </div>
       <div class="about-numbered__item">
         <span class="about-numbered__num">02</span>
         <div class="about-numbered__body">
-          <h3 class="about-numbered__title">Watch together (or apart)</h3>
-          <p>Bets lock automatically at midnight on air day \u2014 no late entries, no mercy. Watch the episode however you like; the app doesn\u2019t care.</p>
+          <h3 class="about-numbered__title">Rose ceremony nights</h3>
+          <p>Some episodes end with a rose ceremony \u2014 someone goes home. On these nights there\u2019s an <strong>extra elimination bet</strong>: pick which contestant you think is leaving. Get it right and you earn bonus points on top of your regular picks.</p>
         </div>
       </div>
       <div class="about-numbered__item">
         <span class="about-numbered__num">03</span>
         <div class="about-numbered__body">
-          <h3 class="about-numbered__title">Mark what happened</h3>
-          <p>After the episode, the admin ticks off which events actually happened and who got eliminated. Points are calculated automatically and the leaderboard updates instantly.</p>
+          <h3 class="about-numbered__title">Bets lock automatically</h3>
+          <p>At midnight on air day, all bets lock \u2014 no late entries, no edits, no mercy. Watch the episode however you like; the app doesn\u2019t care as long as your picks were in on time.</p>
         </div>
       </div>
       <div class="about-numbered__item">
         <span class="about-numbered__num">04</span>
         <div class="about-numbered__body">
+          <h3 class="about-numbered__title">Mark what happened</h3>
+          <p>After the episode, the admin ticks off which events actually occurred and who got eliminated. Points are calculated automatically and the leaderboard updates instantly.</p>
+        </div>
+      </div>
+      <div class="about-numbered__item">
+        <span class="about-numbered__num">05</span>
+        <div class="about-numbered__body">
+          <h3 class="about-numbered__title">Season\u2019s cutest</h3>
+          <p>Every Thursday, each player picks which contestant they thought was cutest that week. It\u2019s worth zero points \u2014 pure vibes, no strategy. A running tally on the overview page shows who the group collectively finds most adorable across the season.</p>
+        </div>
+      </div>
+      <div class="about-numbered__item">
+        <span class="about-numbered__num">06</span>
+        <div class="about-numbered__body">
+          <h3 class="about-numbered__title">Season bets</h3>
+          <p>At the start of the season, players lock in <strong>long-range predictions</strong> \u2014 who wins, first kiss, biggest villain, and more. These don\u2019t pay out until the finale, but they carry big points and can completely swing the final standings.</p>
+        </div>
+      </div>
+      <div class="about-numbered__item">
+        <span class="about-numbered__num">07</span>
+        <div class="about-numbered__body">
+          <h3 class="about-numbered__title">Stats &amp; weekly recaps</h3>
+          <p>The app tracks everything: hit rates, streaks, total points per episode, and detailed player stats. Each week there\u2019s a recap you can copy and share \u2014 leaderboard, standout moments, and who\u2019s climbing or falling.</p>
+        </div>
+      </div>
+      <div class="about-numbered__item">
+        <span class="about-numbered__num">08</span>
+        <div class="about-numbered__body">
           <h3 class="about-numbered__title">Everything syncs live</h3>
-          <p>No refreshing, no \u201Cdid you see my bet?\u201D Everyone sees everything in real time, across all devices. Open it on your phone during the episode or check the leaderboard on your laptop the next morning \u2014 it\u2019s always up to date.</p>
+          <p>No refreshing, no \u201Cdid you see my bet?\u201D Everyone sees everything in real time, across all devices. Open it on your phone during the episode or check the leaderboard on your laptop the next morning \u2014 always up to date.</p>
         </div>
       </div>
     </div>
@@ -4312,21 +4385,20 @@ function wireActions() {
   });
   document.getElementById("add-custom-bank-event")?.addEventListener("click", () => {
     const textEl = document.getElementById("custom-bank-text");
-    const oddsEl = document.getElementById("custom-bank-odds");
+    const likelihoodEl = document.getElementById("custom-bank-likelihood");
     const catEl = document.getElementById("custom-bank-category");
     const phaseEl = document.getElementById("custom-bank-phase");
     const text = (textEl?.value ?? "").trim();
-    let odds = Number.parseFloat(oddsEl?.value);
+    const odds = likelihoodToOdds(likelihoodEl?.value);
     const category = catEl?.value || "_custom";
     const phase = phaseEl?.value || "any";
     if (!text) { alert("Enter a bet description."); return; }
-    if (Number.isNaN(odds) || odds < 1.1) odds = 2.0;
     const dupe = masterBetEvents().some((e) => e.text.trim().toLowerCase() === text.toLowerCase());
     if (dupe) { alert("That bet already exists in the bank."); return; }
     state.customBankEvents.push({ text, odds, category, phase });
     saveState();
     textEl.value = "";
-    oddsEl.value = "2.0";
+    if (likelihoodEl) likelihoodEl.value = "likely";
     if (phaseEl) phaseEl.value = "any";
     populateMasterEventDatalist();
     renderEventBank();

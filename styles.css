@@ -824,6 +824,43 @@ body {
   white-space: nowrap;
 }
 
+.event-bank-row__likelihood {
+  padding: 0.3rem 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.event-bank-row__odds-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--gold-deep);
+  cursor: pointer;
+  white-space: nowrap;
+  padding: 0.25rem 0.4rem;
+  border: 1px dashed var(--line);
+  border-radius: var(--radius-sm);
+}
+
+.event-bank-row__odds-label:hover {
+  border-color: var(--gold-deep);
+  background: rgba(183, 144, 62, 0.08);
+}
+
+.bank-custom-form__likelihood {
+  padding: 0.4rem 0.5rem;
+  font-size: 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--ink);
+}
+
 .event-bank-row__odds-input {
   width: 4.2rem;
   padding: 0.3rem 0.4rem;
@@ -1066,16 +1103,15 @@ body {
 }
 
 .bank-custom-form__row .input:first-child {
-  flex: 1 1 12rem;
+  flex: 1 1 100%;
   min-width: 0;
 }
 
-.bank-custom-form__cat {
-  max-width: 12rem;
-}
-
+.bank-custom-form__likelihood,
+.bank-custom-form__cat,
 .bank-custom-form__phase {
-  max-width: 9rem;
+  flex: 1 1 0;
+  min-width: 0;
 }
 
 .player-list-static {
@@ -1477,6 +1513,14 @@ body {
     width: 3.2rem;
     padding: 0.2rem 0.3rem;
     font-size: 0.72rem;
+  }
+  .event-bank-row__likelihood {
+    font-size: 0.65rem;
+    padding: 0.2rem 0.3rem;
+  }
+  .event-bank-row__odds-label {
+    font-size: 0.65rem;
+    padding: 0.2rem 0.3rem;
   }
   .event-bank-row__times {
     font-size: 0.72rem;
