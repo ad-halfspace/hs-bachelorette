@@ -4812,13 +4812,20 @@ details[open] > .panel__title--toggle::after {
 /* ── Nuttet ── */
 
 #nuttet-section {
+  margin-top: 1.5rem;
   margin-bottom: 2.5rem;
 }
 
 .nuttet-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  display: flex;
+  flex-wrap: wrap;
   gap: 0.75rem;
+}
+
+.nuttet-grid > .nuttet-row {
+  flex: 1 1 calc((100% - (var(--player-cols, 4) - 1) * 0.75rem) / var(--player-cols, 4));
+  min-width: calc((100% - (var(--player-cols, 4) - 1) * 0.75rem) / var(--player-cols, 4));
+  max-width: 100%;
 }
 
 .nuttet-row {
@@ -4965,20 +4972,29 @@ details[open] > .panel__title--toggle::after {
   margin: 0.5rem 0 0;
 }
 
-@media (max-width: 720px) {
-  .nuttet-grid {
-    grid-template-columns: repeat(2, 1fr);
+@media (max-width: 1400px) and (min-width: 1001px) {
+  .nuttet-grid > .nuttet-row {
+    flex: 1 1 calc((100% - 1.5rem) / 3);
+    min-width: calc((100% - 1.5rem) / 3);
   }
 }
 
-@media (max-width: 420px) {
-  .nuttet-grid {
-    grid-template-columns: 1fr;
+@media (max-width: 1000px) and (min-width: 601px) {
+  .nuttet-grid > .nuttet-row {
+    flex: 1 1 calc((100% - 0.75rem) / 2);
+    min-width: calc((100% - 0.75rem) / 2);
   }
 }
 
-/* ── Per-player sections (mobile OR 5+ players) ── */
-.player-sections {
+@media (max-width: 600px) {
+  .nuttet-grid > .nuttet-row {
+    flex: 1 1 100%;
+    min-width: 100%;
+  }
+}
+
+/* ── Per-player sections ── */
+#player-sections {
   display: none;
   grid-column: 1 / -1;
 }
@@ -4987,28 +5003,60 @@ details[open] > .panel__title--toggle::after {
   display: none !important;
 }
 
-.episode--per-player .player-sections {
-  display: grid;
-  grid-template-columns: repeat(var(--player-cols, 4), 1fr);
+.episode--per-player #player-sections {
+  display: block;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 2rem 2.25rem;
+  margin-bottom: 1.5rem;
+}
+
+#player-sections .player-sections__grid {
+  display: flex;
+  flex-wrap: wrap;
   gap: 1rem;
 }
 
-@media (max-width: 1000px) and (min-width: 721px) {
-  .episode--per-player .player-sections {
-    grid-template-columns: repeat(min(var(--player-cols, 4), 2), 1fr);
+#player-sections .player-sections__grid > .player-section-card {
+  flex: 1 1 calc((100% - (var(--player-cols, 4) - 1) * 1rem) / var(--player-cols, 4));
+  min-width: calc((100% - (var(--player-cols, 4) - 1) * 1rem) / var(--player-cols, 4));
+  max-width: 100%;
+}
+
+@media (max-width: 1400px) and (min-width: 1001px) {
+  #player-sections .player-sections__grid > .player-section-card {
+    flex: 1 1 calc((100% - 2rem) / 3);
+    min-width: calc((100% - 2rem) / 3);
   }
 }
 
-@media (max-width: 720px) {
+@media (max-width: 1000px) and (min-width: 601px) {
+  #player-sections .player-sections__grid > .player-section-card {
+    flex: 1 1 calc((100% - 1rem) / 2);
+    min-width: calc((100% - 1rem) / 2);
+  }
+}
+
+@media (max-width: 600px) {
   .desktop-bet-section {
     display: none !important;
   }
 
-  .player-sections,
-  .episode--per-player .player-sections {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
+  #player-sections {
+    display: block !important;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  #player-sections .player-sections__grid {
+    gap: 0.75rem;
+  }
+
+  #player-sections .player-sections__grid > .player-section-card {
+    flex: 1 1 100%;
+    min-width: 100%;
   }
 
   .episode-extras {
@@ -5048,10 +5096,10 @@ details[open] > .panel__title--toggle::after {
   background: #faf8f5;
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  padding: 1.2rem 1rem;
+  padding: 1rem 0.85rem;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.4rem;
 }
 
 .player-section-card__name {
@@ -5073,10 +5121,10 @@ details[open] > .panel__title--toggle::after {
 
 .player-section-card__select {
   width: 100%;
-  padding: 0.6rem 0.75rem;
+  padding: 0.5rem 0.6rem;
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-family: var(--font-body);
   background: var(--bg);
   color: var(--ink);
@@ -5084,9 +5132,9 @@ details[open] > .panel__title--toggle::after {
   -webkit-appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23666'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 0.7rem center;
+  background-position: right 0.6rem center;
   background-size: 10px 6px;
-  padding-right: 2rem;
+  padding-right: 1.8rem;
 }
 
 .player-section-card__select:focus {

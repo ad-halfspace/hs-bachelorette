@@ -598,7 +598,7 @@ function mondayLockDeadline(tuesdayDateString) {
   const guess = new Date(Date.UTC(my, mm - 1, md, 22, 0, 0));
   for (let offsetH = -2; offsetH <= 2; offsetH++) {
     const ts = guess.getTime() - offsetH * 3600000;
-    const parts = new Intl.DateTimeFormat("en-GB", {
+    const parts = new Intl.DateTimeFormat("da-DK", {
       timeZone: "Europe/Copenhagen",
       year: "numeric", month: "2-digit", day: "2-digit",
       hour: "2-digit", minute: "2-digit", second: "2-digit",
@@ -643,7 +643,7 @@ function formatCountdown(deadlineMs) {
 
 function formatDeadlineTime(ms) {
   if (!ms) return "";
-  return new Intl.DateTimeFormat("en-GB", {
+  return new Intl.DateTimeFormat("da-DK", {
     timeZone: "Europe/Copenhagen",
     weekday: "short", day: "numeric", month: "short",
     hour: "2-digit", minute: "2-digit", hour12: false
@@ -4327,6 +4327,9 @@ function renderNuttetSection(ep) {
 
   const grid = document.createElement("div");
   grid.className = "nuttet-grid";
+  const nc = state.players.length;
+  const nuttetCols = nc <= 6 ? nc : (nc % 5 !== 1 ? 5 : (nc % 4 !== 1 ? 4 : 5));
+  grid.style.setProperty("--player-cols", nuttetCols);
 
   for (let p = 0; p < state.players.length; p++) {
     const row = document.createElement("div");
@@ -4380,16 +4383,24 @@ function renderPlayerSections() {
   const ep = activeEpisode();
   if (!ep) return;
   ensureEpisodeMaps(ep.id);
-  const cols = Math.min(state.players.length, 4);
-  root.style.setProperty("--player-cols", cols);
+  const n = state.players.length;
+  const cols = n <= 6 ? n : (n % 5 !== 1 ? 5 : (n % 4 !== 1 ? 4 : 5));
 
   const frozen = isEpisodeBetsLocked(ep);
-  const closed = isEpisodeClosed(ep);
   const hasElim = isEliminationEpisode(ep);
-
-  const eligible = getEligibleContestantsForNuttet(ep.id);
-  const nuttetPicks = getNuttetForWeek(ep.id);
   const elimOdds = hasElim ? eliminationOdds(ep) : 0;
+
+  const title = document.createElement("h2");
+  title.className = "panel__title";
+  title.textContent = "Place your bets";
+  const hint = document.createElement("p");
+  hint.className = "panel__hint";
+  hint.textContent = "Each player picks 3 events and one elimination guess.";
+  root.append(title, hint);
+
+  const grid = document.createElement("div");
+  grid.className = "player-sections__grid";
+  grid.style.setProperty("--player-cols", cols);
 
   for (let p = 0; p < state.players.length; p++) {
     const card = document.createElement("div");
@@ -4470,54 +4481,15 @@ function renderPlayerSections() {
       card.append(elimSelect);
     }
 
-    // --- Nuttet pick ---
-    {
-      const nuttetLabel = document.createElement("span");
-      nuttetLabel.className = "player-section-card__label";
-      nuttetLabel.textContent = "Cutest this week";
-      card.append(nuttetLabel);
-
-      const nuttetSelect = document.createElement("select");
-      nuttetSelect.className = "player-section-card__select";
-      if (closed) nuttetSelect.disabled = true;
-
-      const emptyOpt = document.createElement("option");
-      emptyOpt.value = "";
-      emptyOpt.textContent = "\u2014 pick one \u2014";
-      nuttetSelect.append(emptyOpt);
-
-      const currentPick = nuttetPicks[p] || "";
-      const eligibleNames = new Set(eligible.map((g) => g.name));
-      if (currentPick && !eligibleNames.has(currentPick)) eligibleNames.add(currentPick);
-
-      const sorted = [...eligibleNames].sort((a, b) => a.localeCompare(b, "en"));
-      for (const name of sorted) {
-        const opt = document.createElement("option");
-        opt.value = name;
-        opt.textContent = name;
-        if (name === currentPick) opt.selected = true;
-        nuttetSelect.append(opt);
-      }
-
-      nuttetSelect.addEventListener("change", () => {
-        if (!state.nuttet[ep.id]) state.nuttet[ep.id] = {};
-        state.nuttet[ep.id][p] = nuttetSelect.value || null;
-        saveState();
-        renderNuttetSection(ep);
-        renderPlayerSections();
-      });
-      card.append(nuttetSelect);
-    }
-
     const allEventsFilled = picks.every((v) => v !== "");
     const elimFilled = !(hasElim && ep.guys?.length) || !!(state.eliminationBets[ep.id]?.[p]);
-    const nuttetFilled = !!(nuttetPicks[p]);
-    if (allEventsFilled && elimFilled && nuttetFilled) {
+    if (allEventsFilled && elimFilled) {
       card.classList.add("player-section-card--done");
     }
 
-    root.append(card);
+    grid.append(card);
   }
+  root.append(grid);
 }
 
 function renderNuttetOverview() {
@@ -4593,7 +4565,7 @@ function renderEpisodeContent() {
   const betsLocked = ep ? isEpisodeBetsLocked(ep) : false;
   if (workspace) {
     workspace.classList.toggle("episode--closed", closed);
-    workspace.classList.toggle("episode--per-player", state.players.length >= 5);
+    workspace.classList.toggle("episode--per-player", state.players.length >= 2);
   }
 
   const heroEl = document.getElementById("episode-hero");
