@@ -4515,7 +4515,7 @@ function renderElimSection() {
   root.append(title, hint);
 
   const grid = document.createElement("div");
-  grid.className = "nuttet-grid";
+  grid.className = "elim-grid";
 
   for (let p = 0; p < state.players.length; p++) {
     const row = document.createElement("div");

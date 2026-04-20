@@ -5019,6 +5019,17 @@ details[open] > .panel__title--toggle::after {
   grid-column: 1 / -1;
 }
 
+#elim-section .elim-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+#elim-section .elim-grid > .nuttet-row {
+  flex: 1 1 calc((100% - 5 * 0.75rem) / 6);
+  min-width: 120px;
+}
+
 #player-sections .player-sections__grid {
   display: flex;
   flex-wrap: wrap;
