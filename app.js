@@ -2772,6 +2772,9 @@ function renderSeasonBets() {
 
       const playersRow = document.createElement("div");
       playersRow.className = "season-card__players";
+      const nc = state.players.length;
+      const seasonCols = nc <= 6 ? nc : (nc % 5 !== 1 ? 5 : (nc % 4 !== 1 ? 4 : 5));
+      playersRow.style.setProperty("--player-cols", seasonCols);
 
       for (let p = 0; p < state.players.length; p++) {
         const playerPick = document.createElement("div");
