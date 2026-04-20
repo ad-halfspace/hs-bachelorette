@@ -279,25 +279,28 @@
         <p id="episode-score-top" class="score-summary score-summary--top panel--wide" hidden></p>
         <div id="deadline-display" class="deadline-display" hidden></div>
         <div id="episode-airdate-bar" class="episode-airdate-bar" hidden></div>
-        <section class="panel" aria-labelledby="guys-heading">
-          <h2 id="guys-heading" class="panel__title">Contestants this episode</h2>
-          <div id="guys-grid" class="guys-grid"></div>
-          <button type="button" id="add-guy-toggle" class="btn btn--add-episode">+ Add contestant</button>
-          <div id="add-guy-modal" class="modal-overlay" hidden>
-            <div class="modal-overlay__box">
-              <h3 class="modal-overlay__title">Add contestant to episode</h3>
-              <input type="text" id="new-guy-name" class="input" placeholder="Name" maxlength="48" />
-              <input type="url" id="new-guy-photo" class="input" placeholder="Photo URL (optional)" autocomplete="off" />
-              <div class="modal-overlay__actions">
-                <button type="button" id="add-guy" class="btn btn--secondary">Add</button>
-                <button type="button" id="add-guy-cancel" class="btn btn--unlock">Cancel</button>
+        <details class="panel panel--collapsible">
+          <summary class="panel__title panel__title--toggle" id="guys-heading">Contestants this episode</summary>
+          <div class="panel--collapsible__body">
+            <div id="guys-grid" class="guys-grid"></div>
+            <button type="button" id="add-guy-toggle" class="btn btn--add-episode">+ Add contestant</button>
+            <div id="add-guy-modal" class="modal-overlay" hidden>
+              <div class="modal-overlay__box">
+                <h3 class="modal-overlay__title">Add contestant to episode</h3>
+                <input type="text" id="new-guy-name" class="input" placeholder="Name" maxlength="48" />
+                <input type="url" id="new-guy-photo" class="input" placeholder="Photo URL (optional)" autocomplete="off" />
+                <div class="modal-overlay__actions">
+                  <button type="button" id="add-guy" class="btn btn--secondary">Add</button>
+                  <button type="button" id="add-guy-cancel" class="btn btn--unlock">Cancel</button>
+                </div>
               </div>
             </div>
           </div>
-        </section>
+        </details>
 
-        <section class="panel" aria-labelledby="events-heading">
-          <h2 id="events-heading" class="panel__title">Events &amp; odds</h2>
+        <details class="panel panel--collapsible" aria-labelledby="events-heading">
+          <summary class="panel__title panel__title--toggle" id="events-heading">Events &amp; odds</summary>
+          <div class="panel--collapsible__body">
           <p class="panel__hint">
             Odds are shown as multipliers (e.g. 3.5×). Higher = less likely — more points if you’re right.
           </p>
@@ -324,8 +327,9 @@
               title="Decimal odds multiplier"
             />
             <button type="button" id="add-event" class="btn btn--secondary">Add event</button>
+            </div>
           </div>
-        </section>
+        </details>
 
         <section class="panel panel--wide desktop-bet-section" aria-labelledby="bets-heading">
           <h2 id="bets-heading" class="panel__title">Place bets (3 per person)</h2>

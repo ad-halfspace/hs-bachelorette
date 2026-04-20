@@ -165,6 +165,37 @@ body {
   grid-column: 1 / -1;
 }
 
+/* Collapsible panels */
+.panel--collapsible summary {
+  list-style: none;
+}
+.panel--collapsible summary::-webkit-details-marker {
+  display: none;
+}
+
+.panel__title--toggle {
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.panel__title--toggle::after {
+  content: "\25B6";
+  font-size: 0.55em;
+  transition: transform 0.2s ease;
+  color: var(--ink-soft);
+}
+
+details[open] > .panel__title--toggle::after {
+  transform: rotate(90deg);
+}
+
+.panel--collapsible__body {
+  margin-top: 0.75rem;
+}
+
 /* Episode workspace panels get card treatment */
 #episode-workspace .panel {
   background: transparent;
