@@ -4421,16 +4421,13 @@ function renderPlayerSections() {
   const cols = n <= 6 ? n : (n % 5 !== 1 ? 5 : (n % 4 !== 1 ? 4 : 5));
 
   const frozen = isEpisodeBetsLocked(ep);
-  const elimFrozen = isElimBetsLocked(ep);
-  const hasElim = isEliminationEpisode(ep);
-  const elimOdds = hasElim ? eliminationOdds(ep) : 0;
 
   const title = document.createElement("h2");
   title.className = "panel__title";
-  title.textContent = "Place your bets";
+  title.textContent = "Event bets";
   const hint = document.createElement("p");
   hint.className = "panel__hint";
-  hint.textContent = "Each player picks 3 events and one elimination guess.";
+  hint.textContent = "Each player picks 3 events they think will happen this week.";
   root.append(title, hint);
 
   const grid = document.createElement("div");
@@ -4486,43 +4483,77 @@ function renderPlayerSections() {
       card.append(select);
     }
 
-    // --- Elimination bet ---
-    if (hasElim && ep.guys?.length) {
-      const elimLabel = document.createElement("span");
-      elimLabel.className = "player-section-card__label";
-      elimLabel.textContent = `Who goes home? (${elimOdds.toFixed(1)}×)`;
-      card.append(elimLabel);
-
-      const elimSelect = document.createElement("select");
-      elimSelect.className = "player-section-card__select";
-      if (elimFrozen) elimSelect.disabled = true;
-      const currentElim = state.eliminationBets[ep.id]?.[p] || "";
-      let elimHtml = '<option value="">\u2014 Pick who leaves \u2014</option>';
-      for (const g of ep.guys) {
-        const sel = g.name === currentElim ? " selected" : "";
-        elimHtml += `<option value="${escapeHtml(g.name)}"${sel}>${escapeHtml(g.name)}</option>`;
-      }
-      elimSelect.innerHTML = elimHtml;
-      elimSelect.value = currentElim;
-      elimSelect.addEventListener("change", () => {
-        ensureEpisodeMaps(ep.id);
-        state.eliminationBets[ep.id][p] = elimSelect.value;
-        saveState();
-        renderEliminationBets();
-        renderEpisodeScoreSummary();
-        renderLeaderboard();
-        renderPlayerSections();
-      });
-      card.append(elimSelect);
-    }
-
     const allEventsFilled = picks.every((v) => v !== "");
-    const elimFilled = !(hasElim && ep.guys?.length) || !!(state.eliminationBets[ep.id]?.[p]);
-    if (allEventsFilled && elimFilled) {
+    if (allEventsFilled) {
       card.classList.add("player-section-card--done");
     }
 
     grid.append(card);
+  }
+  root.append(grid);
+}
+
+function renderElimSection() {
+  const root = document.getElementById("elim-section");
+  if (!root) return;
+  root.innerHTML = "";
+  const ep = activeEpisode();
+  if (!ep) return;
+  const hasElim = isEliminationEpisode(ep);
+  if (!hasElim || !ep.guys?.length) return;
+  ensureEpisodeMaps(ep.id);
+
+  const frozen = isElimBetsLocked(ep);
+  const elimOdds = eliminationOdds(ep);
+
+  const title = document.createElement("h2");
+  title.className = "panel__title";
+  title.textContent = "Who goes home?";
+  const hint = document.createElement("p");
+  hint.className = "panel__hint";
+  hint.textContent = `Pick the contestant you think won't get a rose. ${elimOdds.toFixed(1)}× if you're right.`;
+  root.append(title, hint);
+
+  const grid = document.createElement("div");
+  grid.className = "nuttet-grid";
+
+  for (let p = 0; p < state.players.length; p++) {
+    const row = document.createElement("div");
+    row.className = "nuttet-row";
+
+    const nameEl = document.createElement("span");
+    nameEl.className = "nuttet-row__name";
+    nameEl.textContent = state.players[p];
+
+    const select = document.createElement("select");
+    select.className = "nuttet-row__select";
+    if (frozen) select.disabled = true;
+    const currentElim = state.eliminationBets[ep.id]?.[p] || "";
+
+    const emptyOpt = document.createElement("option");
+    emptyOpt.value = "";
+    emptyOpt.textContent = "\u2014 Pick who leaves \u2014";
+    select.append(emptyOpt);
+
+    for (const g of ep.guys) {
+      const opt = document.createElement("option");
+      opt.value = g.name;
+      opt.textContent = g.name;
+      if (g.name === currentElim) opt.selected = true;
+      select.append(opt);
+    }
+
+    select.addEventListener("change", () => {
+      ensureEpisodeMaps(ep.id);
+      state.eliminationBets[ep.id][p] = select.value;
+      saveState();
+      renderEliminationBets();
+      renderEpisodeScoreSummary();
+      renderLeaderboard();
+    });
+
+    row.append(nameEl, select);
+    grid.append(row);
   }
   root.append(grid);
 }
@@ -4690,6 +4721,7 @@ function renderEpisodeContent() {
   safe(renderEpisodeScoreSummary, "renderEpisodeScoreSummary");
   if (ep) safe(() => renderNuttetSection(ep), "renderNuttetSection");
   safe(renderPlayerSections, "renderPlayerSections");
+  safe(renderElimSection, "renderElimSection");
 }
 
 function renderDeadlineDisplay(el, ep) {

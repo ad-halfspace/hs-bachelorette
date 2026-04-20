@@ -5006,12 +5006,17 @@ details[open] > .panel__title--toggle::after {
   display: none !important;
 }
 
-.episode--per-player #player-sections {
+.episode--per-player #player-sections,
+.episode--per-player #elim-section {
   display: block;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   padding: 2rem 2.25rem;
   margin-bottom: 1.5rem;
+}
+
+#elim-section {
+  grid-column: 1 / -1;
 }
 
 #player-sections .player-sections__grid {
@@ -5045,7 +5050,8 @@ details[open] > .panel__title--toggle::after {
     display: none !important;
   }
 
-  #player-sections {
+  #player-sections,
+  #elim-section {
     display: block !important;
     border: 1px solid var(--line);
     border-radius: var(--radius);
