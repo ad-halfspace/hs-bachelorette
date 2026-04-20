@@ -42,7 +42,7 @@ window.MASTER_BET_EVENTS = [
   { text: "A kiss happens", odds: 2, category: "romance", phase: "late-heavy" },
   { text: "Sunset shot used as a transition", odds: 2.2, category: "romance" },
   { text: "Kids / how many / family plans are discussed", odds: 2.4, category: "romance", phase: "late-heavy" },
-  { text: "More than one kissing scene in the episode", odds: 2.6, category: "romance", phase: "late-heavy" },
+  { text: "More than one kissing scene in the week", odds: 2.6, category: "romance", phase: "late-heavy" },
   { text: "Hot tub, pool, or \u201Cshirtless\u201D footage", odds: 2.7, category: "romance" },
   { text: "First kiss of the season (clearly highlighted)", odds: 3.2, category: "romance", phase: "early-heavy" },
   { text: "A suitor says \u201CI love you\u201D or \u201CI\u2019m falling in love\u201D", odds: 7, category: "romance", phase: "late-heavy" },
