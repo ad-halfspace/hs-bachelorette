@@ -59,7 +59,10 @@ const fbDb = firebase.database();
 const fbRef = fbDb.ref("state");
 let firebaseReady = false;
 let firebaseHasData = false;
-let suppressFirebaseWrite = false;
+// Start write-locked so a stale localStorage (including defaults) can never
+// clobber Firebase before remote data has been confirmed. Unlocked only when
+// real data arrives, or when admin explicitly restores/uploads a backup.
+let suppressFirebaseWrite = true;
 
 const ADMIN_PASSWORD = "halfspace2026";
 let adminUnlocked = false;
@@ -5676,7 +5679,7 @@ async function init() {
       .then(r => r.json())
       .then(remote => {
         if (firebaseReady) return;
-        if (!remote) { suppressFirebaseWrite = false; return; }
+        if (!remote) { firebaseReady = true; return; }
         firebaseReady = true;
         firebaseHasData = true;
         const localTab = state.activeTab;
@@ -5714,10 +5717,11 @@ async function init() {
   fbRef.on("value", (snapshot) => {
     const remote = snapshot.val();
     if (!remote) {
-      if (!firebaseReady) {
-        firebaseReady = true;
-        suppressFirebaseWrite = false;
-      }
+      // null can mean "DB really is empty", "offline cache miss", or a
+      // transient read failure. We deliberately do NOT unlock writes here:
+      // unlocking with only default/stale local state would clobber real
+      // remote data. Admin can seed an empty DB via the restore/upload flow.
+      if (!firebaseReady) firebaseReady = true;
       return;
     }
     firebaseReady = true;
