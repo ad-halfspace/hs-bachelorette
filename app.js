@@ -58,6 +58,7 @@ const fbAuth = firebase.auth();
 const fbDb = firebase.database();
 const fbRef = fbDb.ref("state");
 let firebaseReady = false;
+let firebaseHasData = false;
 let suppressFirebaseWrite = false;
 
 const ADMIN_PASSWORD = "halfspace2026";
@@ -5564,6 +5565,7 @@ const REMINDER_KEY = "bachelorette-deadline-reminder-dismissed";
 
 function autoLockTick() {
   if (!firebaseReady) return;
+  if (!firebaseHasData) return;
   const now = Date.now();
   let changed = false;
   for (const ep of state.episodes) {
@@ -5671,8 +5673,10 @@ async function init() {
     fetch("https://hs-bachelorette-default-rtdb.europe-west1.firebasedatabase.app/state.json")
       .then(r => r.json())
       .then(remote => {
-        if (firebaseReady || !remote) return;
+        if (firebaseReady) return;
+        if (!remote) { suppressFirebaseWrite = false; return; }
         firebaseReady = true;
+        firebaseHasData = true;
         const localTab = state.activeTab;
         suppressFirebaseWrite = true;
         const merged = { ...defaultState(), ...remote, activeTab: localTab };
@@ -5710,10 +5714,12 @@ async function init() {
     if (!remote) {
       if (!firebaseReady) {
         firebaseReady = true;
+        suppressFirebaseWrite = false;
       }
       return;
     }
     firebaseReady = true;
+    firebaseHasData = true;
     const localTab = state.activeTab;
     suppressFirebaseWrite = true;
     const merged = { ...defaultState(), ...remote, activeTab: localTab };
