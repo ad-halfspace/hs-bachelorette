@@ -637,7 +637,7 @@ function wednesdayLockDeadline(tuesdayDateString) {
   return new Date(Date.UTC(wy, wm - 1, wd, 21, 59, 0)).getTime();
 }
 
-const DANISH_MONTHS = ["januar","februar","marts","april","maj","juni","juli","august","september","oktober","november","december"];
+const ENGLISH_MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
 function formatWeekDateRange(tuesdayDateStr) {
   if (!tuesdayDateStr) return "";
@@ -646,13 +646,13 @@ function formatWeekDateRange(tuesdayDateStr) {
   const thu = new Date(y, m - 1, d + 2);
   const tueDay = tue.getDate();
   const thuDay = thu.getDate();
-  const thuMonth = DANISH_MONTHS[thu.getMonth()];
+  const thuMonth = ENGLISH_MONTHS[thu.getMonth()];
   const thuYear = thu.getFullYear();
   if (tue.getMonth() === thu.getMonth()) {
-    return `tirsdag \u2013 torsdag, ${tueDay}\u2013${thuDay}. ${thuMonth} ${thuYear}`;
+    return `Tuesday \u2013 Thursday, ${tueDay}\u2013${thuDay} ${thuMonth} ${thuYear}`;
   }
-  const tueMonth = DANISH_MONTHS[tue.getMonth()];
-  return `tirsdag \u2013 torsdag, ${tueDay}. ${tueMonth} \u2013 ${thuDay}. ${thuMonth} ${thuYear}`;
+  const tueMonth = ENGLISH_MONTHS[tue.getMonth()];
+  return `Tuesday \u2013 Thursday, ${tueDay} ${tueMonth} \u2013 ${thuDay} ${thuMonth} ${thuYear}`;
 }
 
 function formatCountdown(deadlineMs) {
@@ -668,7 +668,7 @@ function formatCountdown(deadlineMs) {
 
 function formatDeadlineTime(ms) {
   if (!ms) return "";
-  return new Intl.DateTimeFormat("da-DK", {
+  return new Intl.DateTimeFormat("en-GB", {
     timeZone: "Europe/Copenhagen",
     weekday: "short", day: "numeric", month: "short",
     hour: "2-digit", minute: "2-digit", hour12: false
