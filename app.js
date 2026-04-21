@@ -546,7 +546,10 @@ function saveNoteDebounced(contestantName, text, delay) {
 
 function saveState() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  if (!suppressFirebaseWrite) {
+  // Require firebaseHasData: never write unless remote data has been
+  // confirmed loaded (or an admin explicitly seeded it). Prevents any
+  // accidental unlock from clobbering real Firebase data with defaults.
+  if (!suppressFirebaseWrite && firebaseHasData) {
     fbRef.set(sharedState()).catch(() => {});
   }
 }
@@ -4136,6 +4139,7 @@ function renderAdminPanel() {
       suppressFirebaseWrite = true;
       state = { ...defaultState(), ...restored, activeTab: state.activeTab };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      firebaseHasData = true;
       suppressFirebaseWrite = false;
       saveState();
       renderAll();
@@ -4182,6 +4186,7 @@ function renderAdminPanel() {
         suppressFirebaseWrite = true;
         state = { ...defaultState(), ...restored, activeTab: state.activeTab };
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        firebaseHasData = true;
         suppressFirebaseWrite = false;
         saveState();
         renderAll();
@@ -5036,6 +5041,7 @@ function wireActions() {
       suppressFirebaseWrite = true;
       state = { ...defaultState(), ...restored, activeTab: state.activeTab };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      firebaseHasData = true;
       suppressFirebaseWrite = false;
       saveState();
       renderAll();
