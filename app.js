@@ -4690,10 +4690,17 @@ function renderEpisodeContent() {
     const showBetsLock = ep?.betsLocked && !closed;
     betsLockBanner.hidden = !showBetsLock;
     if (showBetsLock && betsLockText) {
-      let msg = "Bets are locked. Events and results can still be edited.";
+      const elimLocked = isElimBetsLocked(ep);
+      let msg = elimLocked
+        ? "Event and elimination bets are locked."
+        : "Event bets are locked.";
       if (ep.betsLockedAt) {
         msg += " \u00B7 Locked " + formatDeadlineTime(ep.betsLockedAt);
       }
+      const still = [];
+      if (!elimLocked) still.push("your vote for who doesn't get a rose (until Wed 23:59)");
+      still.push("cutest picks (until the week is closed)");
+      msg += " \u00B7 You can still edit " + still.join(" and ") + ".";
       betsLockText.textContent = msg;
     }
   }
