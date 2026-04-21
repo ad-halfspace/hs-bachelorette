@@ -637,6 +637,38 @@ function wednesdayLockDeadline(tuesdayDateString) {
   return new Date(Date.UTC(wy, wm - 1, wd, 21, 59, 0)).getTime();
 }
 
+function formatDeadlineInput(ms) {
+  if (!ms) return "";
+  const parts = new Intl.DateTimeFormat("sv-SE", {
+    timeZone: "Europe/Copenhagen",
+    year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", hour12: false
+  }).formatToParts(new Date(ms));
+  const get = (t) => parts.find((p) => p.type === t)?.value || "";
+  return `${get("year")}-${get("month")}-${get("day")} ${get("hour")}:${get("minute")}`;
+}
+
+function parseCopenhagenDatetime(str) {
+  const m = str.match(/^(\d{4})-(\d{2})-(\d{2})\s+(\d{1,2}):(\d{2})$/);
+  if (!m) { alert("Invalid format. Use YYYY-MM-DD HH:MM"); return null; }
+  const [, ys, ms, ds, hs, mins] = m;
+  const guess = new Date(Date.UTC(+ys, +ms - 1, +ds, +hs - 2, +mins, 0));
+  for (let off = -2; off <= 2; off++) {
+    const ts = guess.getTime() + off * 3600000;
+    const p = new Intl.DateTimeFormat("sv-SE", {
+      timeZone: "Europe/Copenhagen",
+      year: "numeric", month: "2-digit", day: "2-digit",
+      hour: "2-digit", minute: "2-digit", hour12: false
+    }).formatToParts(new Date(ts));
+    const get = (t) => p.find((x) => x.type === t)?.value || "";
+    if (get("year") === ys && get("month") === ms && get("day") === ds &&
+        get("hour") === hs.padStart(2, "0") && get("minute") === mins) {
+      return ts;
+    }
+  }
+  return guess.getTime();
+}
+
 const ENGLISH_MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
 function formatWeekDateRange(tuesdayDateStr) {
@@ -3985,7 +4017,16 @@ function renderAdminPanel() {
     }
     if (!ep.closed && ep.betsLocked) {
       actions.append(adminBtn("Unlock bets", "btn--secondary-sm", () => {
+        const newDeadline = prompt(
+          "New lock deadline (YYYY-MM-DD HH:MM, Copenhagen time)?\nLeave blank to keep the current deadline.",
+          ep.betsLockDeadline ? formatDeadlineInput(ep.betsLockDeadline) : ""
+        );
         ep.betsLocked = false;
+        ep.betsLockedAt = null;
+        if (newDeadline && newDeadline.trim()) {
+          const ts = parseCopenhagenDatetime(newDeadline.trim());
+          if (ts) ep.betsLockDeadline = ts;
+        }
         saveState();
         renderAdminPanel();
         renderMainTabs();
@@ -5015,7 +5056,16 @@ function wireActions() {
     const ep = activeEpisode();
     if (!ep) return;
     if (!confirm("Unlock bets? Players will be able to change their picks again.")) return;
+    const newDeadline = prompt(
+      "New lock deadline (YYYY-MM-DD HH:MM, Copenhagen time)?\nLeave blank to keep the current deadline.",
+      ep.betsLockDeadline ? formatDeadlineInput(ep.betsLockDeadline) : ""
+    );
     ep.betsLocked = false;
+    ep.betsLockedAt = null;
+    if (newDeadline && newDeadline.trim()) {
+      const ts = parseCopenhagenDatetime(newDeadline.trim());
+      if (ts) ep.betsLockDeadline = ts;
+    }
     saveState();
     renderMainTabs();
     renderEpisodeContent();
