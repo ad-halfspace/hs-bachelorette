@@ -685,7 +685,6 @@ function isEliminationEpisode(ep) {
 }
 
 /* ── Weekly recap helpers ── */
-const ENGLISH_MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 const ENGLISH_DAYS = { 0: "Sun", 1: "Mon", 2: "Tue", 3: "Wed", 4: "Thu", 5: "Fri", 6: "Sat" };
 const ENGLISH_DAYS_LONG = { 2: "Tuesday", 3: "Wednesday", 4: "Thursday" };
 
