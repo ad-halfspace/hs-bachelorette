@@ -2438,10 +2438,12 @@ function renderEliminationBets() {
       ensureEpisodeMaps(ep.id);
       state.eliminationBets[ep.id][p] = select.value;
       saveState();
+      renderEliminationBets();
       renderEpisodeScoreSummary();
       renderLeaderboard();
     });
     card.append(h, select);
+    if (current) card.classList.add("elim-bet-card--done");
     root.append(card);
   }
 }
