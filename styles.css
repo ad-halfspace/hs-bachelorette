@@ -151,6 +151,21 @@ body {
   letter-spacing: 0.06em;
   line-height: 1.5;
 }
+.hero__cta {
+  display: inline-block;
+  margin: 1.25rem 0 0;
+  padding: 0.65rem 1.8rem;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--cream);
+  background: var(--ink);
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: opacity var(--duration) var(--ease);
+}
+.hero__cta:hover { opacity: 0.85; }
 
 .panel {
   background: transparent;
@@ -1204,12 +1219,15 @@ details[open] > .panel__title--toggle::after {
   max-width: 5.5rem;
 }
 
-.episode-tabs {
-  margin-bottom: 1.5rem;
-  padding-bottom: 0;
+.episode-nav {
   position: sticky;
   top: 0;
   z-index: 100;
+  padding: 0.5rem 0;
+  background: var(--cream);
+}
+.episode-tabs {
+  margin-bottom: 0;
   font-size: 1.133rem;
 }
 

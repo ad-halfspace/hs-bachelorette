@@ -4735,7 +4735,6 @@ function renderEpisodeContent() {
   safe(renderEpisodeScoreSummary, "renderEpisodeScoreSummary");
   if (ep) safe(() => renderNuttetSection(ep), "renderNuttetSection");
   safe(renderPlayerSections, "renderPlayerSections");
-  safe(renderElimSection, "renderElimSection");
 }
 
 function renderDeadlineDisplay(el, ep) {
@@ -5469,11 +5468,33 @@ function checkNewRecapBanner() {
   }
 }
 
+function renderHeroCta() {
+  const btn = document.getElementById("hero-cta");
+  if (!btn) return;
+  let targetEp = null;
+  for (let i = state.episodes.length - 1; i >= 0; i--) {
+    if (!state.episodes[i].closed) { targetEp = state.episodes[i]; break; }
+  }
+  if (!targetEp) { btn.hidden = true; return; }
+  const idx = state.episodes.indexOf(targetEp);
+  const locked = isEpisodeBetsLocked(targetEp);
+  btn.textContent = locked
+    ? "See this week’s bets (" + episodeTabLabel(idx) + ") →"
+    : "Place your bets for " + episodeTabLabel(idx) + " →";
+  btn.hidden = false;
+  btn.onclick = () => {
+    state.activeTab = targetEp.id;
+    saveState();
+    renderAll();
+  };
+}
+
 function renderAll() {
   normalizeActiveTab();
   const safe = (fn, label) => { try { fn(); } catch (e) { console.error(label + ":", e); } };
   safe(renderMainTabs, "renderMainTabs");
   safe(updateViewVisibility, "updateViewVisibility");
+  safe(renderHeroCta, "renderHeroCta");
   safe(renderOverview, "renderOverview");
   if (activeEpisode()) safe(renderEpisodeContent, "renderEpisodeContent");
   safe(renderLeaderboard, "renderLeaderboard");
@@ -5591,6 +5612,46 @@ async function init() {
 
   if (!autoLockIntervalId) autoLockIntervalId = setInterval(autoLockTick, 30000);
   if (!countdownIntervalId) countdownIntervalId = setInterval(refreshCountdowns, 60000);
+
+  setTimeout(() => {
+    if (firebaseReady) return;
+    console.warn("Firebase SDK slow — fetching state via REST fallback");
+    fetch("https://hs-bachelorette-default-rtdb.europe-west1.firebasedatabase.app/state.json")
+      .then(r => r.json())
+      .then(remote => {
+        if (firebaseReady || !remote) return;
+        firebaseReady = true;
+        const localTab = state.activeTab;
+        suppressFirebaseWrite = true;
+        const merged = { ...defaultState(), ...remote, activeTab: localTab };
+        if (!merged.bets || typeof merged.bets !== "object") merged.bets = {};
+        if (!merged.occurred || typeof merged.occurred !== "object") merged.occurred = {};
+        if (!Array.isArray(merged.customBankEvents)) merged.customBankEvents = [];
+        if (!Array.isArray(merged.hiddenBankEvents)) merged.hiddenBankEvents = [];
+        if (!merged.bankOddsOverrides || typeof merged.bankOddsOverrides !== "object") merged.bankOddsOverrides = {};
+        if (!merged.bankTextOverrides || typeof merged.bankTextOverrides !== "object") merged.bankTextOverrides = {};
+        if (!merged.bankPhaseOverrides || typeof merged.bankPhaseOverrides !== "object") merged.bankPhaseOverrides = {};
+        if (!merged.eliminationBets || typeof merged.eliminationBets !== "object") merged.eliminationBets = {};
+        if (!merged.seasonBets || typeof merged.seasonBets !== "object") merged.seasonBets = {};
+        if (!merged.seasonResults || typeof merged.seasonResults !== "object") merged.seasonResults = {};
+        if (typeof merged.seasonBetsLocked !== "boolean") merged.seasonBetsLocked = false;
+        if (!merged.contestantNotes || typeof merged.contestantNotes !== "object") merged.contestantNotes = {};
+        if (!Array.isArray(merged.customCast)) merged.customCast = [];
+        if (!Array.isArray(merged.players) || merged.players.length === 0) merged.players = [...DEFAULT_PLAYERS];
+        if (!Array.isArray(merged.episodes)) merged.episodes = [];
+        for (const ep of merged.episodes) {
+          if (!Array.isArray(ep.events)) ep.events = [];
+          if (!Array.isArray(ep.eliminated)) ep.eliminated = [];
+          if (!Array.isArray(ep.guys)) ep.guys = [];
+        }
+        state = merged;
+        normalizeActiveTab();
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        try { renderAll(); } catch (e) { console.error("renderAll failed:", e); }
+        suppressFirebaseWrite = false;
+      })
+      .catch(e => console.error("REST fallback failed:", e));
+  }, 3000);
 
   fbRef.on("value", (snapshot) => {
     const remote = snapshot.val();
