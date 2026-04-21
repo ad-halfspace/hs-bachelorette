@@ -5563,6 +5563,7 @@ function renderAll() {
 const REMINDER_KEY = "bachelorette-deadline-reminder-dismissed";
 
 function autoLockTick() {
+  if (!firebaseReady) return;
   const now = Date.now();
   let changed = false;
   for (const ep of state.episodes) {
@@ -5654,6 +5655,7 @@ async function init() {
   if (loadingEl) loadingEl.hidden = true;
   if (appRoot) appRoot.hidden = false;
 
+  suppressFirebaseWrite = true;
   try { renderAll(); } catch (e) { console.error("renderAll failed:", e); }
   try { wireActions(); } catch (e) { console.error("wireActions failed:", e); }
   renderAdminSignInBar();
@@ -5707,7 +5709,6 @@ async function init() {
     const remote = snapshot.val();
     if (!remote) {
       if (!firebaseReady) {
-        fbRef.set(sharedState()).catch(() => {});
         firebaseReady = true;
       }
       return;
