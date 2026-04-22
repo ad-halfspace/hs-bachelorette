@@ -2370,9 +2370,40 @@ details[open] > .panel__title--toggle::after {
 }
 
 .elim-bets-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: 1rem;
+}
+
+.elim-bets-grid > .elim-bet-card {
+  flex: 1 1 calc((100% - (var(--player-cols, 4) - 1) * 1rem) / var(--player-cols, 4));
+  min-width: calc((100% - (var(--player-cols, 4) - 1) * 1rem) / var(--player-cols, 4));
+  max-width: 100%;
+}
+
+@media (max-width: 1400px) and (min-width: 1001px) {
+  .elim-bets-grid > .elim-bet-card {
+    flex: 1 1 calc((100% - 2rem) / 3);
+    min-width: calc((100% - 2rem) / 3);
+  }
+}
+
+@media (max-width: 1000px) and (min-width: 601px) {
+  .elim-bets-grid > .elim-bet-card {
+    flex: 1 1 calc((100% - 1rem) / 2);
+    min-width: calc((100% - 1rem) / 2);
+  }
+}
+
+@media (max-width: 600px) {
+  .elim-bets-grid {
+    gap: 0.75rem;
+  }
+
+  .elim-bets-grid > .elim-bet-card {
+    flex: 1 1 100%;
+    min-width: 100%;
+  }
 }
 
 .elim-bet-card {

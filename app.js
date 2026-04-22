@@ -2400,6 +2400,12 @@ function renderResults() {
   });
 }
 
+function balancedPlayerCols(n) {
+  if (n <= 1) return 1;
+  const rows = Math.ceil(n / 4);
+  return Math.min(4, Math.ceil(n / rows));
+}
+
 function renderEliminationBets() {
   const ep = activeEpisode();
   const root = document.getElementById("elim-bets-grid");
@@ -2422,6 +2428,8 @@ function renderEliminationBets() {
   const odds = eliminationOdds(ep);
   const oddsNote = document.getElementById("elim-odds-note");
   if (oddsNote) oddsNote.textContent = `(${odds.toFixed(1)}\u00D7 if correct \u2014 scales with number of guys)`;
+
+  root.style.setProperty("--player-cols", balancedPlayerCols(state.players.length));
 
   for (let p = 0; p < state.players.length; p++) {
     const card = document.createElement("div");
@@ -4412,9 +4420,7 @@ function renderNuttetSection(ep) {
 
   const grid = document.createElement("div");
   grid.className = "nuttet-grid";
-  const nc = state.players.length;
-  const nuttetCols = nc <= 6 ? nc : (nc % 5 !== 1 ? 5 : (nc % 4 !== 1 ? 4 : 5));
-  grid.style.setProperty("--player-cols", nuttetCols);
+  grid.style.setProperty("--player-cols", balancedPlayerCols(state.players.length));
 
   for (let p = 0; p < state.players.length; p++) {
     const row = document.createElement("div");
@@ -4472,8 +4478,7 @@ function renderPlayerSections() {
   const ep = activeEpisode();
   if (!ep) return;
   ensureEpisodeMaps(ep.id);
-  const n = state.players.length;
-  const cols = n <= 6 ? n : (n % 5 !== 1 ? 5 : (n % 4 !== 1 ? 4 : 5));
+  const cols = balancedPlayerCols(state.players.length);
 
   const frozen = isEpisodeBetsLocked(ep);
 
