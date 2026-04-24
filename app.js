@@ -205,17 +205,22 @@ function castPhotoByName(name) {
   return match?.photo || null;
 }
 
-function ensureInCast(name, photo, occupation) {
+function ensureInCast(name, photo, occupation, age) {
   const n = name.trim().toLowerCase();
   if (CAST_BA4_2026.some((c) => c.name.toLowerCase() === n)) return;
   if (!Array.isArray(state.customCast)) state.customCast = [];
   const existing = state.customCast.find((c) => c.name.toLowerCase() === n);
   const occ = (occupation || "").trim();
+  const parsedAge = Number.parseInt(age, 10);
+  const ageNum = Number.isFinite(parsedAge) && parsedAge > 0 ? parsedAge : null;
   if (existing) {
     if (occ && !existing.occupation) existing.occupation = occ;
+    if (ageNum && !existing.age) existing.age = ageNum;
     return;
   }
-  state.customCast.push({ name: name.trim(), photo: photo || "", occupation: occ });
+  const entry = { name: name.trim(), photo: photo || "", occupation: occ };
+  if (ageNum) entry.age = ageNum;
+  state.customCast.push(entry);
 }
 
 function photoFallback(img, name) {
@@ -4871,13 +4876,15 @@ function wireActions() {
     const nameEl = document.getElementById("cast-add-name");
     const photoEl = document.getElementById("cast-add-photo");
     const occEl = document.getElementById("cast-add-occupation");
+    const ageEl = document.getElementById("cast-add-age");
     const weekEl = document.getElementById("cast-add-week");
     const name = nameEl.value.trim();
     if (!name) return;
     const photo = photoEl.value.trim();
     const occupation = occEl?.value.trim() || "";
+    const age = ageEl?.value.trim() || "";
     const firstWeekId = weekEl?.value || "";
-    ensureInCast(name, photo, occupation);
+    ensureInCast(name, photo, occupation, age);
     if (firstWeekId) {
       const startIdx = (state.episodes || []).findIndex((ep) => ep.id === firstWeekId);
       if (startIdx >= 0) {
@@ -4893,6 +4900,7 @@ function wireActions() {
     nameEl.value = "";
     photoEl.value = "";
     if (occEl) occEl.value = "";
+    if (ageEl) ageEl.value = "";
     if (weekEl) weekEl.value = "";
     if (castAddModal) castAddModal.hidden = true;
     saveState();
@@ -5002,16 +5010,19 @@ function wireActions() {
     const input = document.getElementById("new-guy-name");
     const photoInput = document.getElementById("new-guy-photo");
     const occInput = document.getElementById("new-guy-occupation");
+    const ageInput = document.getElementById("new-guy-age");
     const name = input.value.trim();
     const photo = photoInput?.value.trim() || "";
     const occupation = occInput?.value.trim() || "";
+    const age = ageInput?.value.trim() || "";
     if (!ep || !name) return;
     if (!Array.isArray(ep.guys)) ep.guys = [];
     ep.guys.push({ id: uid(), name });
-    ensureInCast(name, photo, occupation);
+    ensureInCast(name, photo, occupation, age);
     input.value = "";
     if (photoInput) photoInput.value = "";
     if (occInput) occInput.value = "";
+    if (ageInput) ageInput.value = "";
     if (addGuyModal) addGuyModal.hidden = true;
     saveState();
     renderGuys();
