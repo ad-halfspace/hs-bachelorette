@@ -4625,7 +4625,7 @@ function renderElimSection() {
 function renderNuttetOverview() {
   const root = document.getElementById("overview-nuttet");
   if (!root) return;
-  const ranking = getNuttetRanking();
+  const ranking = getNuttetRanking().slice(0, 3);
   root.innerHTML = "";
 
   if (!ranking.length) {
