@@ -195,12 +195,17 @@ function castPhotoByName(name) {
   return match?.photo || null;
 }
 
-function ensureInCast(name, photo) {
+function ensureInCast(name, photo, occupation) {
   const n = name.trim().toLowerCase();
   if (CAST_BA4_2026.some((c) => c.name.toLowerCase() === n)) return;
   if (!Array.isArray(state.customCast)) state.customCast = [];
-  if (state.customCast.some((c) => c.name.toLowerCase() === n)) return;
-  state.customCast.push({ name: name.trim(), photo: photo || "", occupation: "" });
+  const existing = state.customCast.find((c) => c.name.toLowerCase() === n);
+  const occ = (occupation || "").trim();
+  if (existing) {
+    if (occ && !existing.occupation) existing.occupation = occ;
+    return;
+  }
+  state.customCast.push({ name: name.trim(), photo: photo || "", occupation: occ });
 }
 
 function photoFallback(img, name) {
@@ -4832,12 +4837,15 @@ function wireActions() {
   document.getElementById("cast-add-btn")?.addEventListener("click", () => {
     const nameEl = document.getElementById("cast-add-name");
     const photoEl = document.getElementById("cast-add-photo");
+    const occEl = document.getElementById("cast-add-occupation");
     const name = nameEl.value.trim();
     if (!name) return;
     const photo = photoEl.value.trim();
-    ensureInCast(name, photo);
+    const occupation = occEl?.value.trim() || "";
+    ensureInCast(name, photo, occupation);
     nameEl.value = "";
     photoEl.value = "";
+    if (occEl) occEl.value = "";
     if (castAddModal) castAddModal.hidden = true;
     saveState();
     renderOverview();
@@ -4938,14 +4946,17 @@ function wireActions() {
     const ep = activeEpisode();
     const input = document.getElementById("new-guy-name");
     const photoInput = document.getElementById("new-guy-photo");
+    const occInput = document.getElementById("new-guy-occupation");
     const name = input.value.trim();
     const photo = photoInput?.value.trim() || "";
+    const occupation = occInput?.value.trim() || "";
     if (!ep || !name) return;
     if (!Array.isArray(ep.guys)) ep.guys = [];
     ep.guys.push({ id: uid(), name });
-    ensureInCast(name, photo);
+    ensureInCast(name, photo, occupation);
     input.value = "";
     if (photoInput) photoInput.value = "";
+    if (occInput) occInput.value = "";
     if (addGuyModal) addGuyModal.hidden = true;
     saveState();
     renderGuys();
