@@ -189,6 +189,16 @@ function allCast() {
   return [...CAST_BA4_2026, ...extras];
 }
 
+function eliminatedContestantNames() {
+  const out = new Set();
+  for (const ep of state.episodes || []) {
+    for (const name of ep.eliminated || []) {
+      if (name) out.add(name.trim().toLowerCase());
+    }
+  }
+  return out;
+}
+
 function castPhotoByName(name) {
   const n = name.trim().toLowerCase();
   const match = allCast().find((c) => c.name.toLowerCase() === n);
@@ -1366,9 +1376,18 @@ function renderOverview() {
   if (!root) return;
   if (activeNoteEditor) return;
   root.innerHTML = "";
+  const elimSet = eliminatedContestantNames();
   allCast().forEach((c) => {
     const card = document.createElement("article");
     card.className = "cast-card";
+    const isEliminated = elimSet.has(c.name.toLowerCase());
+    if (isEliminated) {
+      card.classList.add("cast-card--eliminated");
+      const badge = document.createElement("span");
+      badge.className = "cast-card__elim-badge";
+      badge.textContent = "Eliminated";
+      card.append(badge);
+    }
     const fig = document.createElement("div");
     fig.className = "cast-card__photo-wrap";
     if (c.photo) {
