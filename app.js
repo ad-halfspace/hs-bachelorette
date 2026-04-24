@@ -4844,7 +4844,21 @@ function guysAfterEliminations(ep) {
 
 function wireActions() {
   const castAddModal = document.getElementById("cast-add-modal");
+  function populateCastAddWeekOptions() {
+    const sel = document.getElementById("cast-add-week");
+    if (!sel) return;
+    const prev = sel.value;
+    sel.innerHTML = '<option value="">First week (optional)</option>';
+    (state.episodes || []).forEach((ep, i) => {
+      const opt = document.createElement("option");
+      opt.value = ep.id;
+      opt.textContent = ep.title || `Week ${i + 1}`;
+      sel.append(opt);
+    });
+    if (prev && [...sel.options].some((o) => o.value === prev)) sel.value = prev;
+  }
   document.getElementById("cast-add-toggle")?.addEventListener("click", () => {
+    populateCastAddWeekOptions();
     if (castAddModal) castAddModal.hidden = false;
   });
   document.getElementById("cast-add-cancel")?.addEventListener("click", () => {
@@ -4857,17 +4871,39 @@ function wireActions() {
     const nameEl = document.getElementById("cast-add-name");
     const photoEl = document.getElementById("cast-add-photo");
     const occEl = document.getElementById("cast-add-occupation");
+    const weekEl = document.getElementById("cast-add-week");
     const name = nameEl.value.trim();
     if (!name) return;
     const photo = photoEl.value.trim();
     const occupation = occEl?.value.trim() || "";
+    const firstWeekId = weekEl?.value || "";
     ensureInCast(name, photo, occupation);
+    if (firstWeekId) {
+      const startIdx = (state.episodes || []).findIndex((ep) => ep.id === firstWeekId);
+      if (startIdx >= 0) {
+        for (let i = startIdx; i < state.episodes.length; i++) {
+          const ep = state.episodes[i];
+          if (!Array.isArray(ep.guys)) ep.guys = [];
+          if (!ep.guys.some((g) => g.name.toLowerCase() === name.toLowerCase())) {
+            ep.guys.push({ id: uid(), name });
+          }
+        }
+      }
+    }
     nameEl.value = "";
     photoEl.value = "";
     if (occEl) occEl.value = "";
+    if (weekEl) weekEl.value = "";
     if (castAddModal) castAddModal.hidden = true;
     saveState();
     renderOverview();
+    if (firstWeekId) {
+      const safe = (fn) => { try { fn(); } catch {} };
+      safe(() => typeof renderGuys === "function" && renderGuys());
+      safe(() => typeof renderEliminationBets === "function" && renderEliminationBets());
+      safe(() => typeof renderEliminations === "function" && renderEliminations());
+      safe(() => typeof renderLeaderboard === "function" && renderLeaderboard());
+    }
   });
 
   document.getElementById("bank-event-search")?.addEventListener("input", () => {
