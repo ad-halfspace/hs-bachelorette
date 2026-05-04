@@ -369,6 +369,16 @@ function deleteActiveEpisode() {
     state.activeTab = state.episodes[nextIdx].id;
   }
   saveState();
+  if (!suppressFirebaseWrite && firebaseHasData) {
+    // Targeted nulls so we don't fight concurrent bet writes for other
+    // episodes via a full-tree set.
+    fbRef.update({
+      [`bets/${id}`]: null,
+      [`occurred/${id}`]: null,
+      [`eliminationBets/${id}`]: null,
+      [`nuttet/${id}`]: null,
+    }).catch(() => {});
+  }
   renderMainTabs();
   updateViewVisibility();
   if (activeEpisode()) renderEpisodeContent();
@@ -548,13 +558,37 @@ function saveNoteDebounced(contestantName, text, delay) {
   }, delay);
 }
 
-function saveState() {
+const SYNC_EDIT_KEYS = ["bets", "occurred", "eliminationBets", "seasonBets", "seasonResults", "nuttet"];
+
+function saveState(paths) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   // Require firebaseHasData: never write unless remote data has been
   // confirmed loaded (or an admin explicitly seeded it). Prevents any
   // accidental unlock from clobbering real Firebase data with defaults.
-  if (!suppressFirebaseWrite && firebaseHasData) {
-    fbRef.set(sharedState()).catch(() => {});
+  if (suppressFirebaseWrite || !firebaseHasData) return;
+  if (Array.isArray(paths) && paths.length) {
+    // Targeted multi-path update — only touches the listed subpaths so
+    // concurrent edits to other subtrees from another session aren't
+    // clobbered.
+    const updates = {};
+    for (const p of paths) {
+      const segs = p.split("/").filter(Boolean);
+      let v = state;
+      for (const s of segs) {
+        v = v == null ? undefined : v[s];
+        if (v === undefined) break;
+      }
+      updates[p] = v === undefined ? null : v;
+    }
+    fbRef.update(updates).catch(() => {});
+  } else {
+    // Full-state save — but skip the frequently-edited bet/result keys
+    // so an admin "save all" doesn't wipe in-flight bet writes from
+    // other sessions. Bet edits go through the targeted-paths branch
+    // above; cleanup paths emit explicit nulls.
+    const shared = { ...sharedState() };
+    for (const k of SYNC_EDIT_KEYS) delete shared[k];
+    fbRef.update(shared).catch(() => {});
   }
 }
 
@@ -1130,6 +1164,16 @@ function removePlayer(index) {
   state.seasonBets = seasonRebuilt;
   if (currentPlayer === name) setCurrentPlayer("");
   saveState();
+  // Targeted updates for the bet subtrees we re-indexed (full saveState
+  // skips SYNC_EDIT_KEYS to avoid clobbering concurrent bet writes).
+  if (!suppressFirebaseWrite && firebaseHasData) {
+    const updates = {};
+    for (const epId of Object.keys(state.bets)) updates[`bets/${epId}`] = state.bets[epId];
+    for (const epId of Object.keys(state.eliminationBets || {})) updates[`eliminationBets/${epId}`] = state.eliminationBets[epId];
+    for (const epId of Object.keys(state.nuttet || {})) updates[`nuttet/${epId}`] = state.nuttet[epId];
+    updates["seasonBets"] = state.seasonBets;
+    fbRef.update(updates).catch(() => {});
+  }
   renderPlayersManager();
   renderAll();
   showToast(`${name} removed. Backup saved — use "Restore backup" to undo.`);
@@ -2245,12 +2289,26 @@ function renderEvents() {
       if (frozen) rm.disabled = true;
       rm.addEventListener("click", () => {
         ep.events = ep.events.filter((x) => x.id !== ev.id);
+        const betPaths = [];
         for (let i = 0; i < state.players.length; i++) {
           const b = state.bets[ep.id]?.[i];
-          if (b) state.bets[ep.id][i] = b.filter((id) => id !== ev.id);
+          if (b) {
+            state.bets[ep.id][i] = b.filter((id) => id !== ev.id);
+            betPaths.push(`bets/${ep.id}/${i}`);
+          }
         }
         state.occurred[ep.id] = (state.occurred[ep.id] || []).filter((id) => id !== ev.id);
+        // Episodes also mutated (event removed) — include it so full
+        // saveState (which excludes SYNC_EDIT_KEYS) covers ep.events too.
         saveState();
+        if (!suppressFirebaseWrite && firebaseHasData) {
+          const updates = { [`occurred/${ep.id}`]: state.occurred[ep.id] };
+          for (const p of betPaths) {
+            const parts = p.split("/");
+            updates[p] = state.bets[parts[1]][parts[2]];
+          }
+          fbRef.update(updates).catch(() => {});
+        }
         renderEvents();
         renderBets();
         renderResults();
@@ -2329,7 +2387,7 @@ function renderBets() {
         }
         while (cleaned.length < MAX_BETS) cleaned.push("");
         state.bets[ep.id][p] = cleaned.slice(0, MAX_BETS);
-        saveState();
+        saveState([`bets/${ep.id}/${p}`]);
         renderBets();
         renderResults();
         renderEpisodeScoreSummary();
@@ -2398,7 +2456,7 @@ function renderResults() {
       if (cb.checked) next.add(ev.id);
       else next.delete(ev.id);
       state.occurred[ep.id] = [...next];
-      saveState();
+      saveState([`occurred/${ep.id}`]);
       renderEpisodeScoreSummary();
       renderLeaderboard();
     });
@@ -2464,7 +2522,7 @@ function renderEliminationBets() {
     select.addEventListener("change", () => {
       ensureEpisodeMaps(ep.id);
       state.eliminationBets[ep.id][p] = select.value;
-      saveState();
+      saveState([`eliminationBets/${ep.id}/${p}`]);
       renderEliminationBets();
       renderEpisodeScoreSummary();
       renderLeaderboard();
@@ -2885,7 +2943,7 @@ function renderSeasonBets() {
         const input = buildSeasonInput(cat, currentPick, locked, (val) => {
           if (!state.seasonBets[p]) state.seasonBets[p] = {};
           state.seasonBets[p][cat.key] = val;
-          saveState();
+          saveState([`seasonBets/${p}/${cat.key}`]);
           renderSeasonBets();
         });
 
@@ -2912,7 +2970,7 @@ function renderSeasonBets() {
       const input = buildSeasonInput(cat, state.seasonResults?.[cat.key] || "", false, (val) => {
         if (!state.seasonResults) state.seasonResults = {};
         state.seasonResults[cat.key] = val;
-        saveState();
+        saveState([`seasonResults/${cat.key}`]);
         renderSeasonBets();
         renderLeaderboard();
       });
@@ -4162,7 +4220,9 @@ function renderAdminPanel() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       firebaseHasData = true;
       suppressFirebaseWrite = false;
-      saveState();
+      // Restore is wholesale — bypass the SYNC_EDIT_KEYS exclusion so
+      // the backed-up bets/results actually overwrite Firebase.
+      fbRef.set(sharedState()).catch(() => {});
       renderAll();
       renderAdminPanel();
       showToast("Restored backup from " + keys[idx]);
@@ -4180,6 +4240,8 @@ function renderAdminPanel() {
     localStorage.removeItem(STORAGE_KEY);
     state = defaultState();
     saveState();
+    // Wholesale wipe — bypass SYNC_EDIT_KEYS exclusion to truly clear FB.
+    if (firebaseHasData) fbRef.set(sharedState()).catch(() => {});
     renderAll();
     renderAdminPanel();
     showToast("Data reset. Backup saved as " + ts);
@@ -4209,7 +4271,8 @@ function renderAdminPanel() {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
         firebaseHasData = true;
         suppressFirebaseWrite = false;
-        saveState();
+        // Wholesale upload — bypass SYNC_EDIT_KEYS exclusion to overwrite FB.
+        fbRef.set(sharedState()).catch(() => {});
         renderAll();
         renderAdminPanel();
         showToast("Restored from uploaded backup");
@@ -4470,7 +4533,7 @@ function renderNuttetSection(ep) {
     select.addEventListener("change", () => {
       if (!state.nuttet[ep.id]) state.nuttet[ep.id] = {};
       state.nuttet[ep.id][p] = select.value || null;
-      saveState();
+      saveState([`nuttet/${ep.id}/${p}`]);
       renderNuttetSection(ep);
     });
 
@@ -4546,7 +4609,7 @@ function renderPlayerSections() {
         }
         while (cleaned.length < MAX_BETS) cleaned.push("");
         state.bets[ep.id][p] = cleaned.slice(0, MAX_BETS);
-        saveState();
+        saveState([`bets/${ep.id}/${p}`]);
         renderBets();
         renderResults();
         renderEpisodeScoreSummary();
@@ -4619,7 +4682,7 @@ function renderElimSection() {
     select.addEventListener("change", () => {
       ensureEpisodeMaps(ep.id);
       state.eliminationBets[ep.id][p] = select.value;
-      saveState();
+      saveState([`eliminationBets/${ep.id}/${p}`]);
       renderEliminationBets();
       renderEpisodeScoreSummary();
       renderLeaderboard();
