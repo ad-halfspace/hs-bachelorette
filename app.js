@@ -635,6 +635,122 @@ function parseBackupTime(key) {
   return Number.isFinite(t) ? t : 0;
 }
 
+// Compact human summary of a backup snapshot used by the restore
+// preview prompt. Counts bets/eliminations/season picks so admins can
+// see whether a snapshot has the data they expect before overwriting.
+function describeBackup(b) {
+  if (!b || typeof b !== "object") return "(empty snapshot)";
+  const countMap = (m) => {
+    if (!m || typeof m !== "object") return 0;
+    let n = 0;
+    for (const v of Object.values(m)) {
+      if (v == null) continue;
+      if (Array.isArray(v)) n += v.filter((x) => x).length;
+      else if (typeof v === "object") n += Object.values(v).filter((x) => x && (!Array.isArray(x) || x.some(Boolean))).length;
+      else if (v) n += 1;
+    }
+    return n;
+  };
+  const players = (b.players || []).join(", ") || "(none)";
+  const eps = (b.episodes || []).map((e) => e.title || "Untitled");
+  const betsPerEp = {};
+  for (const [epId, m] of Object.entries(b.bets || {})) {
+    let c = 0;
+    if (m && typeof m === "object") {
+      for (const v of Object.values(m)) {
+        if (Array.isArray(v) && v.some(Boolean)) c++;
+      }
+    }
+    betsPerEp[epId] = c;
+  }
+  const epLabel = (id) => {
+    const ep = (b.episodes || []).find((e) => e.id === id);
+    return ep ? (ep.title || id) : id;
+  };
+  const betsLine = Object.entries(betsPerEp)
+    .map(([id, n]) => `  • ${epLabel(id)}: ${n} player${n === 1 ? "" : "s"} with picks`)
+    .join("\n") || "  (no bets)";
+  const elimCount = countMap(b.eliminationBets);
+  const seasonCount = countMap(b.seasonBets);
+  const customCast = (b.customCast || []).length;
+  return [
+    `Players (${(b.players || []).length}): ${players}`,
+    `Episodes (${eps.length}): ${eps.join(", ") || "(none)"}`,
+    `Event bets:\n${betsLine}`,
+    `Elimination bet entries: ${elimCount}`,
+    `Season bet entries: ${seasonCount}`,
+    `Custom contestants: ${customCast}`,
+  ].join("\n\n");
+}
+
+function downloadBackupSnapshot(key, snapshot) {
+  try {
+    const blob = new Blob([JSON.stringify(snapshot, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `backup-${key}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  } catch (e) {
+    console.error("Backup download failed:", e);
+    alert("Couldn't download that backup.");
+  }
+}
+
+// Interactive picker that loops until the admin either restores a
+// chosen snapshot or cancels. After picking a number we show a preview
+// — counts of players, episodes, bets — and offer the choice to
+// download the snapshot as JSON, go back to the list, or restore.
+//
+// Returns the chosen backup as { key, snapshot } or null if cancelled.
+async function pickBackupInteractive() {
+  const snap = await fbDb.ref("backups").once("value");
+  const backups = snap.val();
+  if (!backups) { alert("No backups found."); return null; }
+  const keys = Object.keys(backups)
+    .sort((a, b) => parseBackupTime(b) - parseBackupTime(a))
+    .slice(0, 25);
+  while (true) {
+    const list = keys.map((k, i) => `${i + 1}. ${k}`).join("\n");
+    const choice = prompt(
+      "Available backups (newest first):\n\n" + list +
+      "\n\nEnter the number to PREVIEW (it won't overwrite anything yet):"
+    );
+    if (choice === null) return null;
+    const idx = parseInt(choice, 10) - 1;
+    if (isNaN(idx) || idx < 0 || idx >= keys.length) {
+      alert("Pick a number from the list."); continue;
+    }
+    const key = keys[idx];
+    const snapshot = backups[key];
+    const summary = describeBackup(snapshot);
+    const action = prompt(
+      `Backup: ${key}\n\n${summary}\n\n` +
+      `Type one of:\n` +
+      `  restore  — overwrite current data with this snapshot\n` +
+      `  download — save this snapshot as a JSON file (no overwrite)\n` +
+      `  back     — pick a different backup\n` +
+      `  cancel   — exit without doing anything`,
+      "back"
+    );
+    if (action === null) return null;
+    const a = action.trim().toLowerCase();
+    if (a === "cancel" || a === "exit" || a === "quit") return null;
+    if (a === "download" || a === "save" || a === "json") {
+      downloadBackupSnapshot(key, snapshot);
+      continue;
+    }
+    if (a === "restore" || a === "yes" || a === "ok") {
+      if (!confirm(`Last check — restore "${key}"? This OVERWRITES the live data in Firebase. Cannot be undone (but a fresh auto-backup will run within a minute).`)) continue;
+      return { key, snapshot };
+    }
+    // Anything else (including "back" or empty) loops back to the list.
+  }
+}
+
 function getEpisode(id) {
   return state.episodes.find((e) => e.id === id);
 }
@@ -4248,24 +4364,10 @@ function renderAdminPanel() {
   dataActions.className = "admin-data-actions";
   dataActions.append(adminBtn("Restore from backup", "btn--secondary", async () => {
     try {
-      // Pull everything (the auto-backup ring is capped at BACKUP_KEEP),
-      // then sort by parsed timestamp so the lexicographic mix of
-      // `2026-...` and `pre-remove-...` keys still lists newest first.
-      const snap = await fbDb.ref("backups").once("value");
-      const backups = snap.val();
-      if (!backups) { alert("No backups found."); return; }
-      const allKeys = Object.keys(backups);
-      const keys = allKeys
-        .sort((a, b) => parseBackupTime(b) - parseBackupTime(a))
-        .slice(0, 25);
-      const list = keys.map((k, i) => `${i + 1}. ${k}`).join("\n");
-      const choice = prompt("Available backups (newest first):\n\n" + list + "\n\nEnter the number to restore:");
-      const idx = parseInt(choice, 10) - 1;
-      if (isNaN(idx) || idx < 0 || idx >= keys.length) return;
-      if (!confirm("Restore backup from " + keys[idx] + "? This will overwrite current data.")) return;
-      const restored = backups[keys[idx]];
+      const picked = await pickBackupInteractive();
+      if (!picked) return;
       suppressFirebaseWrite = true;
-      state = { ...defaultState(), ...restored, activeTab: state.activeTab };
+      state = { ...defaultState(), ...picked.snapshot, activeTab: state.activeTab };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       firebaseHasData = true;
       suppressFirebaseWrite = false;
@@ -4274,7 +4376,7 @@ function renderAdminPanel() {
       fbRef.set(sharedState()).catch(() => {});
       renderAll();
       renderAdminPanel();
-      showToast("Restored backup from " + keys[idx]);
+      showToast("Restored backup from " + picked.key);
     } catch (e) {
       console.error("Restore failed:", e);
       alert("Failed to load backups.");
@@ -5206,20 +5308,10 @@ function wireActions() {
 
   document.getElementById("restore-backup")?.addEventListener("click", async () => {
     try {
-      const snap = await fbDb.ref("backups").once("value");
-      const backups = snap.val();
-      if (!backups) { alert("No backups found."); return; }
-      const keys = Object.keys(backups)
-        .sort((a, b) => parseBackupTime(b) - parseBackupTime(a))
-        .slice(0, 25);
-      const list = keys.map((k, i) => `${i + 1}. ${k}`).join("\n");
-      const choice = prompt("Available backups (newest first):\n\n" + list + "\n\nEnter the number to restore:");
-      const idx = parseInt(choice, 10) - 1;
-      if (isNaN(idx) || idx < 0 || idx >= keys.length) return;
-      if (!confirm("Restore backup from " + keys[idx] + "? This will overwrite current data.")) return;
-      const restored = backups[keys[idx]];
+      const picked = await pickBackupInteractive();
+      if (!picked) return;
       suppressFirebaseWrite = true;
-      state = { ...defaultState(), ...restored, activeTab: state.activeTab };
+      state = { ...defaultState(), ...picked.snapshot, activeTab: state.activeTab };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       firebaseHasData = true;
       suppressFirebaseWrite = false;
@@ -5227,7 +5319,7 @@ function wireActions() {
       // backed-up bets actually land in Firebase.
       fbRef.set(sharedState()).catch(() => {});
       renderAll();
-      showToast("Restored backup from " + keys[idx]);
+      showToast("Restored backup from " + picked.key);
     } catch (e) {
       console.error("Restore failed:", e);
       alert("Failed to load backups. Check console for details.");
