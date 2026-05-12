@@ -2749,6 +2749,10 @@ function renderEliminations() {
       renderEliminations();
       renderEpisodeScoreSummary();
       renderLeaderboard();
+      // The overview "Still in the running" list depends on cumulative
+      // eliminations across episodes — refresh it when one changes.
+      try { renderOverviewPanels(); } catch {}
+      try { renderOverview(); } catch {}
     });
 
     const photoWrap = document.createElement("div");
@@ -2815,13 +2819,28 @@ function renderEpisodeScoreSummary() {
 }
 
 function getRunningGuyNames() {
-  for (let i = state.episodes.length - 1; i >= 0; i--) {
-    const ep = state.episodes[i];
-    if (ep.guys && ep.guys.length > 0) {
-      return guysAfterEliminations(ep).map((g) => g.name);
+  // Union of every guy that has ever appeared in any episode, minus
+  // anyone eliminated in any episode. The previous version only looked
+  // at the latest episode's snapshot (taken when that episode was
+  // created), so late edits to earlier weeks' eliminations didn't
+  // update the overview list.
+  const allEliminated = new Set();
+  const everSeen = new Map(); // lower-case name -> original-case name (first seen)
+  for (const ep of state.episodes || []) {
+    for (const g of (ep.guys || [])) {
+      const key = g.name.toLowerCase();
+      if (!everSeen.has(key)) everSeen.set(key, g.name);
+    }
+    for (const name of (ep.eliminated || [])) {
+      if (name) allEliminated.add(name.toLowerCase());
     }
   }
-  return CAST_BA4_2026.map((c) => c.name);
+  if (everSeen.size === 0) return CAST_BA4_2026.map((c) => c.name);
+  const out = [];
+  for (const [key, name] of everSeen.entries()) {
+    if (!allEliminated.has(key)) out.push(name);
+  }
+  return out;
 }
 
 function getEventOccurrenceCounts() {
