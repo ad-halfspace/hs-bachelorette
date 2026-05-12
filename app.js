@@ -2661,6 +2661,8 @@ function renderEliminationBets() {
 
   root.style.setProperty("--player-cols", balancedPlayerCols(state.players.length));
 
+  const eligible = getStillStandingGuys(ep.id);
+
   for (let p = 0; p < state.players.length; p++) {
     const card = document.createElement("div");
     card.className = "elim-bet-card";
@@ -2670,10 +2672,15 @@ function renderEliminationBets() {
     const select = document.createElement("select");
     select.className = "input";
     const current = state.eliminationBets[ep.id]?.[p] || "";
+    // Keep the previously-picked name visible even if a late edit to
+    // an earlier week's eliminations made them ineligible — so the
+    // player can see their stale pick rather than silently lose it.
+    const names = eligible.map((g) => g.name);
+    if (current && !names.includes(current)) names.push(current);
     let html = '<option value="">— Pick who leaves —</option>';
-    for (const g of ep.guys) {
-      const sel = g.name === current ? " selected" : "";
-      html += `<option value="${escapeHtml(g.name)}"${sel}>${escapeHtml(g.name)}</option>`;
+    for (const name of names) {
+      const sel = name === current ? " selected" : "";
+      html += `<option value="${escapeHtml(name)}"${sel}>${escapeHtml(name)}</option>`;
     }
     select.innerHTML = html;
     select.value = current;
@@ -4594,7 +4601,11 @@ function getThursdayEpisodeForWeek(weekId) {
   return getEpisodesForWeek(weekId).find((ep) => isEliminationEpisode(ep)) || null;
 }
 
-function getEligibleContestantsForNuttet(epId) {
+// Guys still in the running at the start of this episode — i.e.
+// ep.guys minus anyone marked eliminated in any prior episode. Used
+// by the "Who goes home?" picker and the cutest picker so they
+// don't keep showing already-eliminated contestants.
+function getStillStandingGuys(epId) {
   const epIdx = state.episodes.findIndex((e) => e.id === epId);
   if (epIdx < 0) return [];
   const ep = state.episodes[epIdx];
@@ -4606,6 +4617,10 @@ function getEligibleContestantsForNuttet(epId) {
     }
   }
   return ep.guys.filter((g) => !priorEliminated.has(g.name));
+}
+
+function getEligibleContestantsForNuttet(epId) {
+  return getStillStandingGuys(epId);
 }
 
 function getNuttetRanking() {
@@ -4822,11 +4837,17 @@ function renderElimSection() {
     emptyOpt.textContent = "\u2014 Pick who leaves \u2014";
     select.append(emptyOpt);
 
-    for (const g of ep.guys) {
+    const eligible = getStillStandingGuys(ep.id);
+    const names = eligible.map((g) => g.name);
+    // Keep a stale prior pick visible rather than silently dropping it
+    // if an earlier week's eliminations got edited after the pick.
+    if (currentElim && !names.includes(currentElim)) names.push(currentElim);
+
+    for (const name of names) {
       const opt = document.createElement("option");
-      opt.value = g.name;
-      opt.textContent = g.name;
-      if (g.name === currentElim) opt.selected = true;
+      opt.value = name;
+      opt.textContent = name;
+      if (name === currentElim) opt.selected = true;
       select.append(opt);
     }
 
