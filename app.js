@@ -623,6 +623,18 @@ async function writeAutoBackup() {
   }
 }
 
+// Extract an ISO timestamp from a backup key. Auto-backup keys look
+// like "2026-05-12T17-16-47-423Z"; legacy manual keys look like
+// "pre-remove-2026-04-20T07-32-44-485Z". Falls back to 0 so unknown
+// formats sink to the bottom of the list.
+function parseBackupTime(key) {
+  const m = key && key.match(/(\d{4}-\d{2}-\d{2})T(\d{2})-(\d{2})-(\d{2})-(\d{3})Z/);
+  if (!m) return 0;
+  const iso = `${m[1]}T${m[2]}:${m[3]}:${m[4]}.${m[5]}Z`;
+  const t = Date.parse(iso);
+  return Number.isFinite(t) ? t : 0;
+}
+
 function getEpisode(id) {
   return state.episodes.find((e) => e.id === id);
 }
@@ -4236,12 +4248,18 @@ function renderAdminPanel() {
   dataActions.className = "admin-data-actions";
   dataActions.append(adminBtn("Restore from backup", "btn--secondary", async () => {
     try {
-      const snap = await fbDb.ref("backups").orderByKey().limitToLast(10).once("value");
+      // Pull everything (the auto-backup ring is capped at BACKUP_KEEP),
+      // then sort by parsed timestamp so the lexicographic mix of
+      // `2026-...` and `pre-remove-...` keys still lists newest first.
+      const snap = await fbDb.ref("backups").once("value");
       const backups = snap.val();
       if (!backups) { alert("No backups found."); return; }
-      const keys = Object.keys(backups).sort().reverse();
+      const allKeys = Object.keys(backups);
+      const keys = allKeys
+        .sort((a, b) => parseBackupTime(b) - parseBackupTime(a))
+        .slice(0, 25);
       const list = keys.map((k, i) => `${i + 1}. ${k}`).join("\n");
-      const choice = prompt("Available backups:\n\n" + list + "\n\nEnter the number to restore:");
+      const choice = prompt("Available backups (newest first):\n\n" + list + "\n\nEnter the number to restore:");
       const idx = parseInt(choice, 10) - 1;
       if (isNaN(idx) || idx < 0 || idx >= keys.length) return;
       if (!confirm("Restore backup from " + keys[idx] + "? This will overwrite current data.")) return;
@@ -5188,12 +5206,14 @@ function wireActions() {
 
   document.getElementById("restore-backup")?.addEventListener("click", async () => {
     try {
-      const snap = await fbDb.ref("backups").orderByKey().limitToLast(10).once("value");
+      const snap = await fbDb.ref("backups").once("value");
       const backups = snap.val();
       if (!backups) { alert("No backups found."); return; }
-      const keys = Object.keys(backups).sort().reverse();
+      const keys = Object.keys(backups)
+        .sort((a, b) => parseBackupTime(b) - parseBackupTime(a))
+        .slice(0, 25);
       const list = keys.map((k, i) => `${i + 1}. ${k}`).join("\n");
-      const choice = prompt("Available backups:\n\n" + list + "\n\nEnter the number to restore:");
+      const choice = prompt("Available backups (newest first):\n\n" + list + "\n\nEnter the number to restore:");
       const idx = parseInt(choice, 10) - 1;
       if (isNaN(idx) || idx < 0 || idx >= keys.length) return;
       if (!confirm("Restore backup from " + keys[idx] + "? This will overwrite current data.")) return;
@@ -5203,7 +5223,9 @@ function wireActions() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       firebaseHasData = true;
       suppressFirebaseWrite = false;
-      saveState();
+      // Wholesale restore — bypass SYNC_EDIT_KEYS exclusion so the
+      // backed-up bets actually land in Firebase.
+      fbRef.set(sharedState()).catch(() => {});
       renderAll();
       showToast("Restored backup from " + keys[idx]);
     } catch (e) {
